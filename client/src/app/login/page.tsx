@@ -1,123 +1,170 @@
-'use client';
+'use client'
 
-import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
+import { Mail, Lock, Eye, EyeClosed, ArrowRight } from 'lucide-react'
 
+import { cn } from '@/lib/utils'
+
+function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
+  return (
+    <input
+      type={type}
+      className={cn(
+        'flex h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 pl-10 pr-10 text-white placeholder:text-white/30 outline-none focus:border-white/20 focus:bg-white/10 transition-all',
+        className
+      )}
+      {...props}
+    />
+  )
+}
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const router = useRouter()
 
-  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // 3D Card Effect
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+  const rotateX = useTransform(mouseY, [-300, 300], [10, -10])
+  const rotateY = useTransform(mouseX, [-300, 300], [-10, 10])
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    mouseX.set(e.clientX - rect.left - rect.width / 2)
+    mouseY.set(e.clientY - rect.top - rect.height / 2)
+  }
+
+  const handleMouseLeave = () => {
+    mouseX.set(0)
+    mouseY.set(0)
+  }
+
+  // 🔐 REAL LOGIN HANDLER
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
 
-      const data = await response.json();
+      const data = await res.json()
 
-      if (!response.ok) {
-        setError(data.message || 'Login failed');
-        return;
+      if (!res.ok) {
+        alert(data.message || 'Invalid email or password')
+        return
       }
 
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('token', data.token)
 
-      if (data.role === 'admin') {
-        router.push('/admin');
-      } else if (data.role === 'sales_user') {
-        router.push('/sales_user');
-      } else {
-        setError('Invalid user role');
-      }
+      if (data.role === 'admin') router.push('/admin')
+      else if (data.role === 'sales_user') router.push('/sales_user')
+      else router.push('/dashboard')
+
     } catch (err) {
-      setError('An error occurred during login');
-      console.error(err);
+      alert('Login error. Please try again.')
     } finally {
-      setLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-  <div
-    className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
-    style={{ backgroundImage: "url('/login-bg.jpg')" }}
-  >
-    {/* Dark overlay */}
-    <div className="absolute inset-0 bg-black/60"></div>
+    <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-600/40 via-purple-900/60 to-black" />
 
-    <Card className="relative z-10 w-full max-w-md bg-white/90 backdrop-blur-md shadow-2xl border-0 rounded-2xl">
-      <CardHeader className="space-y-2">
-        <CardTitle className="text-3xl font-semibold text-center tracking-tight text-indigo-600 drop-shadow-sm">
-  Sales Dashboard
-</CardTitle>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="w-full max-w-sm z-10"
+        style={{ perspective: 1500 }}
+      >
+        <motion.div
+          className="relative"
+          style={{ rotateX, rotateY }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
+          <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-2xl">
 
+            {/* Header */}
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+                Sales Dashboard
+              </h1>
+              <p className="text-white/60 text-xs mt-1">
+                Sign in to your account
+              </p>
+            </div>
 
-        <CardDescription className="text-center text-sm text-muted-foreground">
-          Sign in to continue to your sales dashboard
-        </CardDescription>
-      </CardHeader>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
 
-      <CardContent>
-        {error && (
-          <p className="text-red-600 text-sm text-center mb-3">
-            {error}
-          </p>
-        )}
+              {/* Email */}
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 w-4 h-4 text-white/40" />
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div className="space-y-2">
-            <Label>Email Address</Label>
-            <Input
-              type="email"
-              placeholder="name@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+              {/* Password */}
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 w-4 h-4 text-white/40" />
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <div
+                  className="absolute right-3 top-3 cursor-pointer"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <Eye className="w-4 h-4 text-white/40" />
+                  ) : (
+                    <EyeClosed className="w-4 h-4 text-white/40" />
+                  )}
+                </div>
+              </div>
+
+              {/* Login Button */}
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-10 rounded-lg bg-white text-black font-medium flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  <div className="w-4 h-4 border-2 border-black/70 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Login <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </motion.button>
+
+            </form>
           </div>
-
-          <div className="space-y-2">
-            <Label>Password</Label>
-            <Input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <Button
-            className="w-full h-11 text-base font-medium"
-            disabled={loading}
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </Button>
-
-          <p className="text-xs text-center text-muted-foreground">
-            Protected access • Authorized users only
-          </p>
-        </form>
-      </CardContent>
-    </Card>
-  </div>
-);
-
+        </motion.div>
+      </motion.div>
+    </div>
+  )
 }
