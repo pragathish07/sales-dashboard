@@ -4,23 +4,15 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, ClipboardList, LogOut } from 'lucide-react'
+import { LayoutDashboard, ShoppingCart, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const menuItems = [
-  {
-    name: 'Dashboard',
-    href: '/sales_user',
-    icon: LayoutDashboard
-  },
-  {
-    name: 'My Orders',
-    href: '/sales_user/orders',
-    icon: ClipboardList
-  }
+  { name: 'Dashboard', href: '/sales_user', icon: LayoutDashboard },
+  { name: 'Orders', href: '/sales_user/orders', icon: ShoppingCart }
 ]
 
-export default function SalesUserLayout({
+export default function SalesLayout({
   children
 }: {
   children: React.ReactNode
@@ -28,39 +20,33 @@ export default function SalesUserLayout({
   const pathname = usePathname()
   const router = useRouter()
 
-  const handleLogout = () => {
-    // remove auth/session data
-    localStorage.clear()
-
-    // redirect to login page
-    router.push('/')
+  const logout = () => {
+    localStorage.removeItem('token')
+    router.push('/login')
   }
 
   return (
     <div className="min-h-screen bg-black relative flex overflow-hidden">
-      {/* Background */}
+      {/* Gradient BG */}
       <div className="absolute inset-0 bg-gradient-to-b from-purple-600/40 via-purple-900/60 to-black" />
 
       {/* Sidebar */}
       <motion.aside
         initial={{ x: -40, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
         className="relative z-10 w-64 m-4 rounded-2xl
                    bg-black/40 backdrop-blur-xl
-                   border border-white/10
-                   shadow-2xl p-4 flex flex-col"
+                   border border-white/10 shadow-2xl
+                   p-4 flex flex-col"
       >
-        {/* Logo */}
         <h1 className="text-xl font-bold mb-8 text-center
           bg-gradient-to-r from-purple-400 to-pink-500
           text-transparent bg-clip-text">
           Sales Panel
         </h1>
 
-        {/* Menu */}
         <nav className="flex flex-col gap-2 flex-1">
-          {menuItems.map((item) => {
+          {menuItems.map(item => {
             const Icon = item.icon
             const active = pathname === item.href
 
@@ -70,7 +56,7 @@ export default function SalesUserLayout({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer',
+                    'flex items-center gap-3 px-4 py-3 rounded-lg transition',
                     active
                       ? 'bg-white text-black'
                       : 'text-white/70 hover:bg-white/10 hover:text-white'
@@ -84,25 +70,21 @@ export default function SalesUserLayout({
           })}
         </nav>
 
-        {/* Logout */}
-        <motion.button
-          onClick={handleLogout}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
+        <button
+          onClick={logout}
           className="flex items-center gap-3 px-4 py-3 rounded-lg
                      text-red-400 hover:bg-red-500/10 transition"
         >
           <LogOut className="w-5 h-5" />
           Logout
-        </motion.button>
+        </button>
       </motion.aside>
 
-      {/* Main Content */}
+      {/* Content */}
       <main className="relative z-10 flex-1 p-6 overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
           className="bg-black/40 backdrop-blur-xl
                      border border-white/10
                      rounded-2xl p-6 min-h-full"

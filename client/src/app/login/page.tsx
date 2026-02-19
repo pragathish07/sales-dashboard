@@ -29,7 +29,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // 3D Card Effect
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
   const rotateX = useTransform(mouseY, [-300, 300], [10, -10])
@@ -46,7 +45,6 @@ export default function LoginPage() {
     mouseY.set(0)
   }
 
-  // 🔐 REAL LOGIN HANDLER
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
