@@ -1,7 +1,7 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { prisma } from '../../config/adapter';
 import { CreateOrderRequest, GetOrdersFilter, OrderResponse, OrderStatistics } from './orders.types';
+import { OrderStatus } from '@prisma/client';
 
-const prisma = new PrismaClient();
 
 export class OrderService {
   // Create new order
@@ -44,7 +44,7 @@ export class OrderService {
         data: {
           customerId: orderData.customerId,
           userId: orderData.userId,
-          status: 'COMPLETED' as any,
+          status: 'PAID',
           totalAmount,
           paymentMethod: orderData.paymentMethod,
           items: {
@@ -76,7 +76,7 @@ export class OrderService {
   async getAllOrders(filters: GetOrdersFilter = {}): Promise<{ orders: OrderResponse[]; total: number }> {
     try {
       const {
-        status = 'COMPLETED',
+        status = 'PAID',
         customerId,
         userId,
         startDate,
@@ -88,8 +88,13 @@ export class OrderService {
       } = filters;
 
       // Validate status is a valid OrderStatus enum value
-      const validStatuses = ['COMPLETED', 'PAID', 'CANCELLED', 'REFUNDED'];
-      const validatedStatus = status && validStatuses.includes(status) ? (status as any) : 'COMPLETED';
+      // const validStatuses = ['PENDING', 'PAID', 'CANCELLED', 'REFUNDED'];
+
+      let validatedStatus: OrderStatus | undefined;
+      if (status && Object.values(OrderStatus).includes(status as OrderStatus)) {
+        validatedStatus = status as OrderStatus;
+      }
+
 
       // Build where clause
       const where: any = {};

@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes  from './modules/users/users.route';
+import ordersRouter from './modules/orders/orders.route';
+
 
 dotenv.config();
 
@@ -18,6 +20,10 @@ app.get('/', (req, res) => {
 app.get('/ping', (req, res) => {
   res.send("pong");
 });
+
+// Orders Routes
+app.use('/api/orders', ordersRouter);
+
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
