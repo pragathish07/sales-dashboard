@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes  from './modules/users/users.route';
 import ordersRouter from './modules/orders/orders.route';
+import customersRouter from './modules/customers/customers.route';
 
 
 dotenv.config();
@@ -24,7 +25,8 @@ app.get('/ping', (req, res) => {
 // Orders Routes
 app.use('/api/orders', ordersRouter);
 
-
+// Customers Routes
+app.use('/api/customers', customersRouter);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
