@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
+import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { Mail, Lock, Eye, EyeClosed, ArrowRight } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -27,6 +27,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   // 3D Card Effect
   const mouseX = useMotionValue(0)
@@ -48,6 +49,7 @@ export default function LoginPage() {
   // 🔐 REAL LOGIN HANDLER
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
     setIsLoading(true)
 
     try {
@@ -60,9 +62,10 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        alert(data.message || 'Invalid email or password')
+        setError(data.message || data.error || 'Invalid email or password')
         return
-      }
+    }   
+
 
       localStorage.setItem('token', data.token)
 
@@ -71,7 +74,7 @@ export default function LoginPage() {
       else router.push('/dashboard')
 
     } catch (err) {
-      alert('Login error. Please try again.')
+      setError('Wrong credentials. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -107,6 +110,17 @@ export default function LoginPage() {
               </p>
             </div>
 
+            {/* Error */}
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-red-400 text-sm text-center mb-4"
+              >
+                {error}
+              </motion.p>
+            )}
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -137,14 +151,14 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <Eye className="w-4 h-4 text-white/40" />
+                    <Eye className="w-4 h-4 text-white/40 hover:text-white transition" />
                   ) : (
-                    <EyeClosed className="w-4 h-4 text-white/40" />
+                    <EyeClosed className="w-4 h-4 text-white/40 hover:text-white transition" />
                   )}
                 </div>
               </div>
 
-              {/* Login Button */}
+              {/* Button */}
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
