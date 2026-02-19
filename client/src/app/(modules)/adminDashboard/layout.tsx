@@ -3,17 +3,18 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  BarChart3,
   Users,
   LogOut
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+
 
 const menuItems = [
   {
@@ -38,13 +39,15 @@ const menuItems = [
   }
 ]
 
-export default function DashboardLayout({
-  children
-}: {
-  children: React.ReactNode
-}) {
+export default function DashboardLayout({children}: {children: React.ReactNode}) {
   const pathname = usePathname()
+  const router = useRouter()
 
+const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('role')
+  router.push('/login')
+}
   return (
     <div className="min-h-screen bg-black relative flex overflow-hidden">
 
@@ -98,6 +101,7 @@ export default function DashboardLayout({
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
+          onClick={handleLogout}
           className="flex items-center gap-3 px-4 py-3 rounded-lg
                      text-red-400 hover:bg-red-500/10 transition"
         >
