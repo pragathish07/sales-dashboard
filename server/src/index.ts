@@ -5,7 +5,7 @@ const app = express();
 const port = 8080;
 
 app.get('/', (req, res) => {
-  res.send({'message': 'TypeScript + Node.js + Express!'});
+  res.send({'message': 'Hello Ts + Node.js + Express!'});
 });
 
 app.get('/ping', (req, res) => {
