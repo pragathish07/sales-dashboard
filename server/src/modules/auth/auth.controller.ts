@@ -1,5 +1,3 @@
-// src/modules/auth/auth.controller.ts
-
 import { Request, Response } from "express";
 import * as authService from "./auth.service";
 

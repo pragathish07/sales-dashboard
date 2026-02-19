@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes  from './modules/users/users.route';
+import authRoutes from './modules/auth/auth.route';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.get('/ping', (req, res) => {
 });
 
 app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 
 app.listen(port, () => {

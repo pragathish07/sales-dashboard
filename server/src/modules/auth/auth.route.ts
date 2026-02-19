@@ -1,5 +1,3 @@
-// src/modules/auth/auth.routes.ts
-
 import { Router } from "express";
 import {
   register,
@@ -11,7 +9,7 @@ import { validate } from "../../middleware/validate";
 import {
   registerSchema,
   loginSchema,
-} from "./auth.validation";
+} from "./auth.validate";
 
 import { verifyToken } from "../../middleware/auth.middleware";
 
