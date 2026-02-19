@@ -6,15 +6,20 @@ import {
   updateProduct,
   deleteProduct,
 } from "./products.controller";
-// import { authenticate } from "../../middleware/auth.middleware";
-// import { authorize } from "../../middleware/role.middleware";
+import { authenticate } from "../../middleware/auth.middleware";
+import { authorize } from "../../middleware/role.middleware";
  
-// const router = Router();
+const router = Router();
  
+router.post("/", createProduct);
+router.get("/",getProducts);
+router.get("/:id", getProductById);
+router.put("/:id",  updateProduct);
+router.delete("/:id", deleteProduct);
 // router.post("/", authenticate, authorize(["ADMIN"]), createProduct);
 // router.get("/", authenticate, getProducts);
 // router.get("/:id", authenticate, getProductById);
 // router.put("/:id", authenticate, authorize(["ADMIN"]), updateProduct);
 // router.delete("/:id", authenticate, authorize(["ADMIN"]), deleteProduct);
  
-// export default router;
+export default router;

@@ -1,11 +1,6 @@
-import { prisma } from "../../config/db";
- 
-//
-// CREATE PRODUCT
-//
+import {prisma} from '../../config/adapter'
 export const createProductService = async (data: any) => {
   const { name, sku, description, price, costPrice, categoryId } = data;
- 
   return await prisma.product.create({
     data: {
       name,
@@ -27,10 +22,6 @@ export const createProductService = async (data: any) => {
     },
   });
 };
- 
-//
-// GET ALL PRODUCTS
-//
 export const getProductsService = async () => {
   return await prisma.product.findMany({
     include: {
@@ -42,10 +33,6 @@ export const getProductsService = async () => {
     },
   });
 };
- 
-//
-// GET SINGLE PRODUCT
-//
 export const getProductByIdService = async (id: string) => {
   return await prisma.product.findUnique({
     where: { id },
@@ -55,16 +42,11 @@ export const getProductByIdService = async (id: string) => {
     },
   });
 };
- 
-//
-// UPDATE PRODUCT
-//
 export const updateProductService = async (
   id: string,
   data: any
 ) => {
   const { name, sku, description, price, costPrice, categoryId } = data;
- 
   return await prisma.product.update({
     where: { id },
     data: {
@@ -81,10 +63,6 @@ export const updateProductService = async (
     },
   });
 };
- 
-//
-// DELETE PRODUCT
-//
 export const deleteProductService = async (id: string) => {
   await prisma.inventory.deleteMany({
     where: { productId: id },

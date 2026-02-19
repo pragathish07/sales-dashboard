@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import * as productService from "./products.service";
+
+
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const product = await productService.createProductService(req.body);
