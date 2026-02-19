@@ -11,6 +11,36 @@ export default function SalesOrdersPage() {
       .then(setOrders)
   }, [])
 
+  const updateStatus = async (id: string, status: string) => {
+    await fetch(`/api/sales_user/orders/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    })
+
+    // update UI instantly
+    setOrders(prev =>
+      prev.map(o =>
+        o.id === id ? { ...o, status } : o
+      )
+    )
+  }
+
+  const statusColor = (status: string) => {
+    switch (status) {
+      case 'PAID':
+        return 'text-green-400'
+      case 'PENDING':
+        return 'text-yellow-400'
+      case 'CANCELLED':
+        return 'text-red-400'
+      case 'REFUNDED':
+        return 'text-purple-400'
+      default:
+        return 'text-white'
+    }
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-white mb-4">
@@ -23,11 +53,35 @@ export default function SalesOrdersPage() {
         {orders.map(o => (
           <div
             key={o.id}
-            className="grid grid-cols-4 p-4 border-b border-white/10 text-white"
+            className="grid grid-cols-4 p-4 border-b border-white/10 text-white items-center"
           >
+            {/* Customer */}
             <span>{o.customer}</span>
+
+            {/* Amount */}
             <span>₹{o.amount}</span>
-            <span>{o.status}</span>
+
+            {/* Status editable */}
+            <select
+              value={o.status}
+              onChange={e =>
+                updateStatus(o.id, e.target.value)
+              }
+              className={`bg-transparent border border-white/10 rounded px-2 py-1 ${statusColor(
+                o.status
+              )}`}
+            >
+              <option value="PENDING">Pending</option>
+              <option value="PAID">Paid</option>
+              <option value="CANCELLED">
+                Cancelled
+              </option>
+              <option value="REFUNDED">
+                Refunded
+              </option>
+            </select>
+
+            {/* Date */}
             <span>
               {new Date(o.date).toLocaleDateString()}
             </span>

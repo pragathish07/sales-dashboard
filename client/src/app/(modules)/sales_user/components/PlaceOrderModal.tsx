@@ -5,12 +5,15 @@ import { useEffect, useState } from 'react'
 export default function PlaceOrderModal() {
   const [open, setOpen] = useState(false)
   const [products, setProducts] = useState<any[]>([])
+
   const [form, setForm] = useState({
     customer: '',
     phone: '',
     productId: '',
     qty: 1,
-    price: 0
+    price: 0,
+    paymentMethod: 'CASH',
+    status: 'PENDING'
   })
 
   useEffect(() => {
@@ -31,6 +34,7 @@ export default function PlaceOrderModal() {
 
   return (
     <>
+      {/* Button */}
       <button
         onClick={() => setOpen(true)}
         className="px-4 py-2 rounded-lg
@@ -40,15 +44,19 @@ export default function PlaceOrderModal() {
         Place Order
       </button>
 
+      {/* Modal */}
       {open && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-black/80 backdrop-blur-xl
-                          border border-white/10
-                          rounded-2xl p-6 w-96 space-y-3">
+          <div
+            className="bg-black/80 backdrop-blur-xl
+                       border border-white/10
+                       rounded-2xl p-6 w-96 space-y-3"
+          >
             <h2 className="text-white font-semibold">
               Create Order
             </h2>
 
+            {/* Customer */}
             <input
               placeholder="Customer Name"
               className="w-full p-2 bg-black border border-white/10 text-white"
@@ -57,6 +65,7 @@ export default function PlaceOrderModal() {
               }
             />
 
+            {/* Phone */}
             <input
               placeholder="Phone"
               className="w-full p-2 bg-black border border-white/10 text-white"
@@ -65,6 +74,7 @@ export default function PlaceOrderModal() {
               }
             />
 
+            {/* Product */}
             <select
               className="w-full p-2 bg-black border border-white/10 text-white"
               onChange={e =>
@@ -79,6 +89,7 @@ export default function PlaceOrderModal() {
               ))}
             </select>
 
+            {/* Quantity */}
             <input
               type="number"
               placeholder="Quantity"
@@ -88,6 +99,7 @@ export default function PlaceOrderModal() {
               }
             />
 
+            {/* Price */}
             <input
               type="number"
               placeholder="Price"
@@ -97,7 +109,58 @@ export default function PlaceOrderModal() {
               }
             />
 
-            <div className="flex gap-2 pt-2">
+            {/* Payment Method */}
+            <div>
+              <label className="text-white/60 text-sm">
+                Payment Method
+              </label>
+              <select
+                value={form.paymentMethod}
+                className="w-full mt-1 p-2 bg-black border border-white/10 text-white"
+                onChange={e =>
+                  setForm({
+                    ...form,
+                    paymentMethod: e.target.value
+                  })
+                }
+              >
+                <option value="CASH">Cash</option>
+                <option value="CARD">Card</option>
+                <option value="UPI">UPI</option>
+                <option value="NETBANKING">
+                  Net Banking
+                </option>
+              </select>
+            </div>
+
+            {/* Order Status */}
+            <div>
+              <label className="text-white/60 text-sm">
+                Order Status
+              </label>
+              <select
+                value={form.status}
+                className="w-full mt-1 p-2 bg-black border border-white/10 text-white"
+                onChange={e =>
+                  setForm({
+                    ...form,
+                    status: e.target.value
+                  })
+                }
+              >
+                <option value="PENDING">Pending</option>
+                <option value="PAID">Paid</option>
+                <option value="CANCELLED">
+                  Cancelled
+                </option>
+                <option value="REFUNDED">
+                  Refunded
+                </option>
+              </select>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-2 pt-3">
               <button
                 onClick={submit}
                 className="flex-1 py-2 rounded-lg
