@@ -2,6 +2,7 @@ import React from 'react'
 
 export default function page () {
   return (
-    <div>Admin</div>
+    <p style={{ fontSize: "200px", color:"white"}}>Hello</p>
+
   )
 }
