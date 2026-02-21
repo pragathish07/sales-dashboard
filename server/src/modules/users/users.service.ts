@@ -1,11 +1,6 @@
 import {prisma} from "../../config/adapter";
 
-interface CreateUserInput {
-  name: string;
-  email: string;
-  password: string;
-  role: "ADMIN" | "SALES";
-}
+import { CreateUserInput } from "../users/users.types"
 
 export const createUser = async (data: CreateUserInput) => {
   return await prisma.user.create({

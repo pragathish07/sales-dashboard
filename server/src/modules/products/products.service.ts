@@ -1,5 +1,10 @@
-import {prisma} from '../../config/adapter'
-export const createProductService = async (data: any) => {
+import { prisma } from '../../config/adapter'
+import {
+  CreateProductInput,
+  UpdateProductInput,
+} from "../products/products.types";
+
+export const createProductService = async (data: CreateProductInput) => {
   const { name, sku, description, price, costPrice, categoryId } = data;
   return await prisma.product.create({
     data: {
@@ -44,7 +49,7 @@ export const getProductByIdService = async (id: string) => {
 };
 export const updateProductService = async (
   id: string,
-  data: any
+  data: UpdateProductInput
 ) => {
   const { name, sku, description, price, costPrice, categoryId } = data;
   return await prisma.product.update({
