@@ -13,7 +13,7 @@ import {
   loginSchema,
 } from "./auth.validation";
 
-import { verifyToken } from "../../middleware/auth.middleware";
+import { verifyToken } from "../../middleware/auth.middleware.ts";
 
 const router = Router();
 

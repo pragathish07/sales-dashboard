@@ -5,6 +5,8 @@ import userRoutes  from './modules/users/users.route';
 import ordersRouter from './modules/orders/orders.route';
 import customersRouter from './modules/customers/customers.route';
 
+import productRoutes from './modules/products/products.route';
+import categoryRoutes from './modules/category/category.route';
 
 dotenv.config();
 
@@ -24,6 +26,10 @@ app.get('/ping', (req, res) => {
 
 // Orders Routes
 app.use('/api/orders', ordersRouter);
+app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/category', categoryRoutes);
+
 
 // Customers Routes
 app.use('/api/customers', customersRouter);
