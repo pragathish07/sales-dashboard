@@ -17,7 +17,7 @@ export default function PlaceOrderModal() {
   })
 
   useEffect(() => {
-    fetch('/api/products')
+    fetch('https://6997437c7d1786436576c91f.mockapi.io/api/products/products')
       .then(r => r.json())
       .then(setProducts)
   }, [])

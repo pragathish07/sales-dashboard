@@ -51,7 +51,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('https://6997437c7d1786436576c91f.mockapi.io/api/products/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -69,7 +69,7 @@ export default function LoginPage() {
 
       if (data.role === 'admin') router.push('/admin')
       else if (data.role === 'sales_user') router.push('/sales_user')
-      else router.push('/dashboard')
+      else router.push('/')
 
     } catch (err) {
       setError('Wrong credentials. Please try again.')
