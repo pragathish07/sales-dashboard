@@ -19,22 +19,22 @@ import { cn } from '@/lib/utils'
 const menuItems = [
   {
     name: 'Dashboard',
-    href: '/adminDashboard',
+    href: '/dashboard',
     icon: LayoutDashboard
   },
   {
     name: 'Products',
-    href: '/adminDashboard/products',
+    href: '/products',
     icon: Package
   },
   {
     name: 'Orders',
-    href: '/adminDashboard/orders',
+    href: '/orders',
     icon: ShoppingCart
   },
   {
     name: 'Users',
-    href: '/adminDashboard/users',
+    href: '/users',
     icon: Users
   }
 ]
