@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 const menuItems = [
   {
     name: 'Dashboard',
-    href: '/dashboard',
+    href: '/adminDashboard',
     icon: LayoutDashboard
   },
   {
