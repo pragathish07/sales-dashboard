@@ -1,85 +1,256 @@
 // src/modules/inventory/inventory.controller.ts
 
-import { Request, Response } from "express";
-import * as inventoryService from "./inventory.service";
+import { Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
+import { InventoryService } from './inventory.service';
+import { CreateInventoryRequest, UpdateInventoryRequest, InventoryResponse, GetInventoryFilter } from './inventory.types';
 
-export const createInventory = async (req: Request, res: Response) => {
-  try {
-    const inventory = await inventoryService.createInventory(req.body);
-    res.status(201).json(inventory);
-  } catch (error: any) {
-    res.status(400).json({ message: error.message });
-  }
-};
+const inventoryService = new InventoryService();
 
-export const getAllInventory = async (req: Request, res: Response) => {
+// Create new inventory record
+export const createInventory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const inventory = await inventoryService.getAllInventory();
-    res.json(inventory);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-};
+    const inventoryData: CreateInventoryRequest = req.body;
 
-export const getInventoryById = async (req: Request<{ id: string }>, res: Response) => {
-  try {
-    const inventory = await inventoryService.getInventoryById(req.params.id);
-    if (!inventory) {
-      return res.status(404).json({ message: "Inventory not found" });
+    // Basic validation
+    if (!inventoryData.productId || inventoryData.quantity === undefined || inventoryData.reorderLevel === undefined) {
+      res.status(400).json({
+        success: false,
+        error: 'Missing required fields: productId, quantity, reorderLevel'
+      } as InventoryResponse);
+      return;
     }
-    res.json(inventory);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-export const getInventoryByProductId = async (req: Request<{ productId: string }>, res: Response) => {
-  try {
-    const inventory = await inventoryService.getInventoryByProductId(req.params.productId);
-    if (!inventory) {
-      return res.status(404).json({ message: "Inventory not found for this product" });
+    if (inventoryData.quantity < 0 || inventoryData.reorderLevel < 0) {
+      res.status(400).json({
+        success: false,
+        error: 'Quantity and reorder level must be non-negative'
+      } as InventoryResponse);
+      return;
     }
-    res.json(inventory);
+
+    const inventory = await inventoryService.createInventory(inventoryData);
+    res.status(201).json({
+      success: true,
+      data: inventory,
+      message: 'Inventory record created successfully'
+    } as InventoryResponse);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({
+      success: false,
+      error: error.message || 'Failed to create inventory record'
+    } as InventoryResponse);
   }
 };
 
-export const updateInventory = async (req: Request<{ id: string }>, res: Response) => {
+// Get all inventory items with filters
+export const getAllInventory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const inventory = await inventoryService.updateInventory(req.params.id, req.body);
-    res.json(inventory);
+    const filters: GetInventoryFilter = {
+      productId: req.query.productId as string,
+      lowStock: req.query.lowStock === 'true',
+      limit: req.query.limit ? parseInt(req.query.limit as string) : 10,
+      offset: req.query.offset ? parseInt(req.query.offset as string) : 0,
+      sortBy: (req.query.sortBy as 'updatedAt' | 'quantity') || 'updatedAt',
+      sortOrder: (req.query.sortOrder as 'asc' | 'desc') || 'desc'
+    };
+
+    const result = await inventoryService.getAllInventory(filters);
+    res.status(200).json({
+      success: true,
+      data: result.items,
+      message: `Retrieved ${result.items.length} inventory items`,
+      total: result.total
+    } as any);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to fetch inventory'
+    } as InventoryResponse);
   }
 };
 
-export const adjustQuantity = async (req: Request<{ productId: string }>, res: Response) => {
+// Get inventory by product ID
+export const getInventoryByProductId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const inventory = await inventoryService.adjustInventoryQuantity(
-      req.params.productId,
-      req.body.adjustment
-    );
-    res.json(inventory);
+    const productId = Array.isArray(req.params.productId) ? req.params.productId[0] : req.params.productId;
+
+    if (!productId) {
+      res.status(400).json({
+        success: false,
+        error: 'Product ID is required'
+      } as InventoryResponse);
+      return;
+    }
+
+    const inventory = await inventoryService.getInventoryByProductId(productId);
+    res.status(200).json({
+      success: true,
+      data: inventory
+    } as InventoryResponse);
   } catch (error: any) {
-    res.status(400).json({ message: error.message });
+    if (error.message === 'Inventory record not found for this product') {
+      res.status(404).json({
+        success: false,
+        error: 'Inventory record not found'
+      } as InventoryResponse);
+    } else {
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to fetch inventory'
+      } as InventoryResponse);
+    }
   }
 };
 
-export const deleteInventory = async (req: Request<{ id: string }>, res: Response) => {
+// Update inventory
+export const updateInventory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    await inventoryService.deleteInventory(req.params.id);
-    res.json({ message: "Inventory deleted successfully" });
+    const productId = Array.isArray(req.params.productId) ? req.params.productId[0] : req.params.productId;
+    const updateData: UpdateInventoryRequest = req.body;
+
+    if (!productId) {
+      res.status(400).json({
+        success: false,
+        error: 'Product ID is required'
+      } as InventoryResponse);
+      return;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      res.status(400).json({
+        success: false,
+        error: 'At least one field must be provided for update'
+      } as InventoryResponse);
+      return;
+    }
+
+    if (updateData.quantity !== undefined && updateData.quantity < 0) {
+      res.status(400).json({
+        success: false,
+        error: 'Quantity must be non-negative'
+      } as InventoryResponse);
+      return;
+    }
+
+    if (updateData.reorderLevel !== undefined && updateData.reorderLevel < 0) {
+      res.status(400).json({
+        success: false,
+        error: 'Reorder level must be non-negative'
+      } as InventoryResponse);
+      return;
+    }
+
+    const inventory = await inventoryService.updateInventory(productId, updateData);
+    res.status(200).json({
+      success: true,
+      data: inventory,
+      message: 'Inventory updated successfully'
+    } as InventoryResponse);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    if (error.message === 'Inventory record not found') {
+      res.status(404).json({
+        success: false,
+        error: 'Inventory record not found'
+      } as InventoryResponse);
+    } else {
+      res.status(400).json({
+        success: false,
+        error: error.message || 'Failed to update inventory'
+      } as InventoryResponse);
+    }
   }
 };
 
-export const getLowStockItems = async (req: Request, res: Response) => {
+// Delete inventory record
+export const deleteInventory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const lowStockItems = await inventoryService.getLowStockItems();
-    res.json(lowStockItems);
+    const productId = Array.isArray(req.params.productId) ? req.params.productId[0] : req.params.productId;
+
+    if (!productId) {
+      res.status(400).json({
+        success: false,
+        error: 'Product ID is required'
+      } as InventoryResponse);
+      return;
+    }
+
+    await inventoryService.deleteInventory(productId);
+    res.status(200).json({
+      success: true,
+      message: 'Inventory record deleted successfully'
+    } as InventoryResponse);
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    if (error.message === 'Inventory record not found') {
+      res.status(404).json({
+        success: false,
+        error: 'Inventory record not found'
+      } as InventoryResponse);
+    } else {
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to delete inventory'
+      } as InventoryResponse);
+    }
+  }
+};
+
+// Adjust inventory quantity
+export const adjustInventoryQuantity = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const productId = Array.isArray(req.params.productId) ? req.params.productId[0] : req.params.productId;
+    const { quantityChange } = req.body;
+
+    if (!productId) {
+      res.status(400).json({
+        success: false,
+        error: 'Product ID is required'
+      } as InventoryResponse);
+      return;
+    }
+
+    if (quantityChange === undefined || typeof quantityChange !== 'number') {
+      res.status(400).json({
+        success: false,
+        error: 'quantityChange must be a number'
+      } as InventoryResponse);
+      return;
+    }
+
+    const inventory = await inventoryService.adjustQuantity(productId, quantityChange);
+    res.status(200).json({
+      success: true,
+      data: inventory,
+      message: 'Inventory quantity adjusted successfully'
+    } as InventoryResponse);
+  } catch (error: any) {
+    if (error.message === 'Inventory record not found') {
+      res.status(404).json({
+        success: false,
+        error: 'Inventory record not found'
+      } as InventoryResponse);
+    } else {
+      res.status(400).json({
+        success: false,
+        error: error.message || 'Failed to adjust inventory'
+      } as InventoryResponse);
+    }
+  }
+};
+
+// Get low stock alerts
+export const getLowStockAlerts = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const lowStockItems = await inventoryService.getLowStockAlerts();
+    res.status(200).json({
+      success: true,
+      data: lowStockItems,
+      message: `Found ${lowStockItems.length} items with low stock`
+    } as any);
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to fetch low stock alerts'
+    } as InventoryResponse);
   }
 };
