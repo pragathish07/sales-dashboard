@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  register,
   login,
   me,
   logout,
@@ -13,7 +12,6 @@ import {
 
 import { validate } from "../../middleware/validate";
 import {
-  registerSchema,
   loginSchema,
   changePasswordSchema,
   forgotPasswordSchema,
@@ -27,7 +25,6 @@ import { requireRole } from "../../middleware/role.middleware";
 
 const router = Router();
 
-router.post("/register", validate(registerSchema), register);
 router.post("/login", validate(loginSchema), login);
 router.post("/logout", logout);
 
