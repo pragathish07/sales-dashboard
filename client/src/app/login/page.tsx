@@ -29,7 +29,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // 3D Card Effect
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
   const rotateX = useTransform(mouseY, [-300, 300], [10, -10])
@@ -46,14 +45,13 @@ export default function LoginPage() {
     mouseY.set(0)
   }
 
-  // 🔐 REAL LOGIN HANDLER
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('https://6997437c7d1786436576c91f.mockapi.io/api/products/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -71,6 +69,7 @@ export default function LoginPage() {
 
       if (data.role === 'admin') router.push('/adminDashboard')
       else if (data.role === 'sales_user') router.push('/sales_user')
+      else router.push('/')
 
     } catch (err) {
       setError('Wrong credentials. Please try again.')
