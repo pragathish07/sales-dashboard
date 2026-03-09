@@ -2,11 +2,13 @@
 
 import { Router } from "express";
 import { createUser, getAllUsers } from "./users.controller";
+//import { authenticateToken } from "./users.middleware";
+import { verifyToken } from "../../middleware/auth.middleware";
+
 
 const router = Router();
 
-// GET /api/users
-router.get("/", getAllUsers);
+router.get("/", verifyToken, getAllUsers);
 router.post("/", createUser);
 
 export default router;
