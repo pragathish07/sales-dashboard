@@ -67,7 +67,7 @@ export default function LoginPage() {
 
       localStorage.setItem('token', data.token)
 
-      if (data.role === 'admin') router.push('/admin')
+      if (data.role === 'admin') router.push('/adminDashboard')
       else if (data.role === 'sales_user') router.push('/sales_user')
       else router.push('/')
 
