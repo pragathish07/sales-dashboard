@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import { OrderService } from './orders.service';
 import { CreateOrderRequest, GetOrdersFilter, ApiResponse } from './orders.types';
 
@@ -6,20 +7,21 @@ const orderService = new OrderService();
 
 export class OrderController {
   // Create new order
-  async createOrder(req: Request, res: Response): Promise<void> {
+  async createOrder(req: AuthRequest, res: Response): Promise<void> {
     try {
       const orderData: CreateOrderRequest = req.body;
+      const userId = req.user!.id;  // userId comes from authenticated token
 
       // Basic validation
-      if (!orderData.customerId || !orderData.userId || !orderData.items || orderData.items.length === 0) {
+      if (!orderData.customerId || !orderData.items || orderData.items.length === 0) {
         res.status(400).json({
           success: false,
-          error: 'Missing required fields: customerId, userId, items'
+          error: 'Missing required fields: customerId, items'
         } as ApiResponse<null>);
         return;
       }
 
-      const order = await orderService.createOrder(orderData);
+      const order = await orderService.createOrder({ ...orderData, userId });
       res.status(201).json({
         success: true,
         data: order,
@@ -34,7 +36,7 @@ export class OrderController {
   }
 
   // Get all orders with filters
-  async getAllOrders(req: Request, res: Response): Promise<void> {
+  async getAllOrders(req: AuthRequest, res: Response): Promise<void> {
     try {
       const filters: GetOrdersFilter = {
         status: req.query.status as string,
@@ -48,7 +50,7 @@ export class OrderController {
         sortOrder: (req.query.sortOrder as 'asc' | 'desc') || 'desc'
       };
 
-      const result = await orderService.getAllOrders(filters);
+      const result = await orderService.getAllOrders(filters, req.user);
       res.status(200).json({
         success: true,
         data: result.orders,
@@ -64,7 +66,7 @@ export class OrderController {
   }
 
   // Get single order
-  async getOrderById(req: Request, res: Response): Promise<void> {
+  async getOrderById(req: AuthRequest, res: Response): Promise<void> {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
@@ -76,16 +78,17 @@ export class OrderController {
         return;
       }
 
-      const order = await orderService.getOrderById(id);
+      const order = await orderService.getOrderById(id, req.user);
       res.status(200).json({
         success: true,
         data: order
       } as ApiResponse<any>);
     } catch (error: any) {
-      if (error.message === 'Order not found') {
-        res.status(404).json({
+      if (error.message === 'Order not found' || error.message.includes('Forbidden')) {
+        const status = error.message.includes('Forbidden') ? 403 : 404;
+        res.status(status).json({
           success: false,
-          error: 'Order not found'
+          error: error.message
         } as ApiResponse<null>);
       } else {
         res.status(500).json({
@@ -97,7 +100,7 @@ export class OrderController {
   }
 
   // Get order statistics
-  async getOrderStatistics(req: Request, res: Response): Promise<void> {
+  async getOrderStatistics(req: AuthRequest, res: Response): Promise<void> {
     try {
       const statistics = await orderService.getOrderStatistics();
       res.status(200).json({

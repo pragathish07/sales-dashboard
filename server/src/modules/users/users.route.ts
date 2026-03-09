@@ -2,13 +2,15 @@
 
 import { Router } from "express";
 import { createUser, getAllUsers } from "./users.controller";
-//import { authenticateToken } from "./users.middleware";
-import { verifyToken } from "../../middleware/auth.middleware";
+// import { authenticateToken } from "./users.middleware";
+import { authenticate } from "../../middleware/auth.middleware";
+import { requireRole } from "../../middleware/role.middleware";
 
 
 const router = Router();
 
-router.get("/", verifyToken, getAllUsers);
-router.post("/", createUser);
+// only admins can list and create users
+router.get("/", authenticate, requireRole(["ADMIN"]), getAllUsers);
+router.post("/", authenticate, requireRole(["ADMIN"]), createUser as any);
 
 export default router;

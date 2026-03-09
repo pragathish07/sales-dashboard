@@ -22,12 +22,8 @@ import {
   userIdParamSchema,
 } from "./auth.validate";
 
-<<<<<<< HEAD
-import { verifyToken } from "../../middleware/auth.middleware.ts";
-=======
-import { verifyToken } from "../../middleware/auth.middleware";
+import { authenticate } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
->>>>>>> 30a903bcc0186c212a45ecc9f4bacb549a93c489
 
 const router = Router();
 
@@ -38,17 +34,17 @@ router.post("/logout", logout);
 router.post("/forgot-password", validate(forgotPasswordSchema), forgotPassword);
 router.post("/reset-password", validate(resetPasswordSchema), resetPassword);
 
-router.patch("/profile", verifyToken, validate(updateProfileSchema), updateProfile);
-router.post("/change-password", verifyToken, validate(changePasswordSchema), changePassword);
+router.patch("/profile", authenticate, validate(updateProfileSchema), updateProfile);
+router.post("/change-password", authenticate, validate(changePasswordSchema), changePassword);
 
 router.delete(
   "/users/:userId",
-  verifyToken,
+  authenticate,
   requireRole(["ADMIN"]),
   validate(userIdParamSchema),
   deleteUser
 );
 
-router.get("/me", verifyToken, me);
+router.get("/me", authenticate, me);
 
 export default router;

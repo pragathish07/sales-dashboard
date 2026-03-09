@@ -1,6 +1,7 @@
 import { prisma } from '../../config/adapter';
 import { CreateOrderRequest, GetOrdersFilter, OrderResponse, OrderStatistics } from './orders.types';
 import { OrderStatus } from '@prisma/client';
+import { AuthPayload } from '../../middleware/auth.middleware';
 
 
 export class OrderService {
@@ -73,7 +74,7 @@ export class OrderService {
   }
 
   // Get all orders with filters
-  async getAllOrders(filters: GetOrdersFilter = {}): Promise<{ orders: OrderResponse[]; total: number }> {
+  async getAllOrders(filters: GetOrdersFilter = {}, requester?: AuthPayload): Promise<{ orders: OrderResponse[]; total: number }> {
     try {
       const {
         status = 'PAID',
@@ -87,14 +88,10 @@ export class OrderService {
         sortOrder = 'desc'
       } = filters;
 
-      // Validate status is a valid OrderStatus enum value
-      // const validStatuses = ['PENDING', 'PAID', 'CANCELLED', 'REFUNDED'];
-
       let validatedStatus: OrderStatus | undefined;
       if (status && Object.values(OrderStatus).includes(status as OrderStatus)) {
         validatedStatus = status as OrderStatus;
       }
-
 
       // Build where clause
       const where: any = {};
@@ -106,6 +103,11 @@ export class OrderService {
         where.createdAt = {};
         if (startDate) where.createdAt.gte = startDate;
         if (endDate) where.createdAt.lte = endDate;
+      }
+
+      // Non-admin users can only see their own orders
+      if (requester && requester.role !== "ADMIN") {
+        where.userId = requester.id;
       }
 
       const orders = await prisma.order.findMany({
@@ -132,7 +134,7 @@ export class OrderService {
   }
 
   // Get single order by ID
-  async getOrderById(orderId: string): Promise<OrderResponse> {
+  async getOrderById(orderId: string, requester?: AuthPayload): Promise<OrderResponse> {
     try {
       const order = await prisma.order.findUnique({
         where: { id: orderId },
@@ -144,6 +146,11 @@ export class OrderService {
       });
 
       if (!order) throw new Error('Order not found');
+
+      // Non-admin users can only see their own orders
+      if (requester && requester.role !== "ADMIN" && order.userId !== requester.id) {
+        throw new Error('Forbidden: You can only view your own orders');
+      }
 
       return this.formatOrderResponse(order);
     } catch (error) {

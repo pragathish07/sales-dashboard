@@ -11,15 +11,15 @@ import { authorize } from "../../middleware/role.middleware";
  
 const router = Router();
  
-router.post("/", createProduct);
-router.get("/",getProducts);
-router.get("/:id", getProductById);
-router.put("/:id",  updateProduct);
-router.delete("/:id", deleteProduct);
-// router.post("/", authenticate, authorize(["ADMIN"]), createProduct);
-// router.get("/", authenticate, getProducts);
-// router.get("/:id", authenticate, getProductById);
-// router.put("/:id", authenticate, authorize(["ADMIN"]), updateProduct);
-// router.delete("/:id", authenticate, authorize(["ADMIN"]), deleteProduct);
+// router.post("/", createProduct);
+// router.get("/",getProducts);
+// router.get("/:id", getProductById);
+// router.put("/:id",  updateProduct);
+// router.delete("/:id", deleteProduct);
+router.get("/", authenticate, getProducts as any);
+router.get("/:id", authenticate, getProductById);
+router.post("/", authenticate, authorize(["ADMIN"]), createProduct);
+router.put("/:id", authenticate, authorize(["ADMIN"]), updateProduct);
+router.delete("/:id", authenticate, authorize(["ADMIN"]), deleteProduct);
  
 export default router;

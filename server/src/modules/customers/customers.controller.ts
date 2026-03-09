@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '../../middleware/auth.middleware';
 import customerService from './customers.service';
 import { CreateCustomerRequest, UpdateCustomerRequest, GetCustomersFilter, ApiResponse } from './customers.types';
 
 class CustomerController {
-  async create(req: Request, res: Response) {
+  async create(req: AuthRequest, res: Response) {
     try {
       const body: CreateCustomerRequest = req.body;
       if (!body.name || !body.phone) {
@@ -16,7 +17,7 @@ class CustomerController {
     }
   }
 
-  async list(req: Request, res: Response) {
+  async list(req: AuthRequest, res: Response) {
     try {
       const filters: GetCustomersFilter = {
         search: req.query.search as string | undefined,
@@ -32,7 +33,7 @@ class CustomerController {
     }
   }
 
-  async getById(req: Request, res: Response) {
+  async getById(req: AuthRequest, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const customer = await customerService.getCustomerById(id);
@@ -42,7 +43,7 @@ class CustomerController {
     }
   }
 
-  async update(req: Request, res: Response) {
+  async update(req: AuthRequest, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const body: UpdateCustomerRequest = req.body;
@@ -53,7 +54,7 @@ class CustomerController {
     }
   }
 
-  async delete(req: Request, res: Response) {
+  async delete(req: AuthRequest, res: Response) {
     try {
       const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       await customerService.deleteCustomer(id);

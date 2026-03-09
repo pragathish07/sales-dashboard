@@ -1,17 +1,20 @@
 import { Router } from 'express';
 import customerController from './customers.controller';
+import { authenticate } from "../../middleware/auth.middleware";
+import { requireRole } from "../../middleware/role.middleware";
+
 
 const router = Router();
 
 // Public: list and get
-router.get('/', customerController.list.bind(customerController));
-router.get('/:id', customerController.getById.bind(customerController));
+router.get('/', authenticate, customerController.list.bind(customerController));
+router.get('/:id', authenticate, customerController.getById.bind(customerController));
 
 // Create
-router.post('/', customerController.create.bind(customerController));
+router.post('/', authenticate, requireRole(["ADMIN"]), customerController.create.bind(customerController));
 
 // Update/Delete
-router.put('/:id', customerController.update.bind(customerController));
-router.delete('/:id', customerController.delete.bind(customerController));
+router.put('/:id', authenticate, requireRole(["ADMIN"]), customerController.update.bind(customerController));
+router.delete('/:id', authenticate, requireRole(["ADMIN"]), customerController.delete.bind(customerController));
 
 export default router;
