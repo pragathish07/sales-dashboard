@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import PlaceOrderModal from './components/PlaceOrderModal'
+import { apiFetch } from '@/lib/api'
 import {
   LineChart,
   Line,
@@ -14,26 +15,44 @@ import {
 
 export default function SalesDashboard() {
   const [analytics, setAnalytics] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  const loadData = () => {
+    apiFetch('/api/reports/sales-stats')
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to fetch')
+        return r.json()
+      })
+      .then(setAnalytics)
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
-    fetch('/api/sales_user/analytics')
-      .then(r => r.json())
-      .then(setAnalytics)
+    loadData()
   }, [])
 
   const kpis = [
-    { label: 'Total Sales', value: analytics?.totalSales || 0 },
-    { label: 'Orders', value: analytics?.ordersCount || 0 },
-    { label: 'Avg Order', value: analytics?.avgOrderValue || 0 },
-    { label: 'Today Sales', value: analytics?.todaySales || 0 }
+    { label: 'Total Sales', value: analytics?.totalSales || 0, isCurrency: true },
+    { label: 'Orders', value: analytics?.ordersCount || 0, isCurrency: false },
+    { label: 'Avg Order', value: analytics?.avgOrderValue || 0, isCurrency: true },
+    { label: 'Today Sales', value: analytics?.todaySales || 0, isCurrency: true }
   ]
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white">Sales Dashboard</h1>
-        <PlaceOrderModal />
+        <PlaceOrderModal onOrderPlaced={loadData} />
       </div>
 
       {/* KPI */}
@@ -48,7 +67,8 @@ export default function SalesDashboard() {
           >
             <p className="text-white/60 text-sm">{k.label}</p>
             <p className="text-2xl font-bold text-white">
-              ₹{k.value}
+              {k.isCurrency ? '₹' : ''}
+              {typeof k.value === 'number' ? k.value.toLocaleString() : k.value}
             </p>
           </motion.div>
         ))}
@@ -63,7 +83,7 @@ export default function SalesDashboard() {
             <XAxis dataKey="date" stroke="#aaa" />
             <YAxis stroke="#aaa" />
             <Tooltip />
-            <Line type="monotone" dataKey="sales" />
+            <Line type="monotone" dataKey="sales" stroke="#a855f7" />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -74,13 +94,24 @@ export default function SalesDashboard() {
           Recent Orders
         </h2>
 
+        {analytics?.recentOrders?.length === 0 && (
+          <p className="text-white/40 text-sm">No orders yet</p>
+        )}
+
         {analytics?.recentOrders?.map((o: any) => (
           <div
             key={o.id}
             className="flex justify-between border-b border-white/10 py-2 text-white"
           >
             <span>{o.customer}</span>
-            <span>₹{o.amount}</span>
+            <span className={`text-sm ${
+              o.status === 'PAID' ? 'text-green-400' :
+              o.status === 'PENDING' ? 'text-yellow-400' :
+              'text-red-400'
+            }`}>
+              {o.status}
+            </span>
+            <span>₹{o.amount?.toLocaleString()}</span>
           </div>
         ))}
       </div>

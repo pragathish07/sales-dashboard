@@ -1,41 +1,54 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Package, Tag, IndianRupee, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { apiFetch } from '@/lib/api'
 
-const initialProducts = [
-  {
-    id: '1',
-    name: 'Laptop',
-    price: 65000,
-    category: 'Electronics',
-    stock: 12
-  },
-  {
-    id: '2',
-    name: 'Mouse',
-    price: 800,
-    category: 'Accessories',
-    stock: 45
-  }
-]
+type Product = {
+  id: string
+  name: string
+  sku: string
+  price: number
+  costPrice: number
+  category: { id: string; name: string } | null
+  inventory: { quantity: number; reorderLevel: number } | null
+}
 
-const DEFAULT_CATEGORIES = ['Electronics', 'Accessories', 'Home Appliances', 'Clothing'] as const
+type Category = {
+  id: string
+  name: string
+}
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState(initialProducts)
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
-  const [categories, setCategories] = useState<string[]>([...DEFAULT_CATEGORIES])
   const [isAddingCategory, setIsAddingCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newProduct, setNewProduct] = useState({
     name: '',
-    category: '',
+    sku: '',
+    categoryId: '',
     price: '',
-    stock: ''
+    costPrice: '',
+    stock: '',
+    description: ''
   })
+
+  useEffect(() => {
+    Promise.all([
+      apiFetch('/api/products').then(r => r.json()),
+      apiFetch('/api/products/categories').then(r => r.json()),
+    ])
+      .then(([prodData, catData]) => {
+        setProducts(prodData.products || [])
+        setCategories(catData.categories || [])
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -47,65 +60,77 @@ export default function ProductsPage() {
     }))
   }
 
-  const handleAddProduct = (e: React.FormEvent) => {
+  const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!newProduct.name || !newProduct.category) return
+    if (!newProduct.name || !newProduct.categoryId || !newProduct.sku) return
 
     const price = Number(newProduct.price)
+    const costPrice = Number(newProduct.costPrice)
     const stock = Number(newProduct.stock)
 
-    if (Number.isNaN(price) || Number.isNaN(stock)) return
+    if (Number.isNaN(price) || Number.isNaN(stock) || Number.isNaN(costPrice)) return
 
-    setProducts(prev => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        name: newProduct.name,
-        category: newProduct.category,
-        price,
-        stock
+    try {
+      const res = await apiFetch('/api/products', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: newProduct.name,
+          sku: newProduct.sku,
+          description: newProduct.description || undefined,
+          price,
+          costPrice,
+          categoryId: newProduct.categoryId,
+          stock,
+        }),
+      })
+
+      const data = await res.json()
+      if (res.ok && data.product) {
+        setProducts(prev => [data.product, ...prev])
       }
-    ])
+    } catch {}
 
-    setNewProduct({
-      name: '',
-      category: '',
-      price: '',
-      stock: ''
-    })
+    setNewProduct({ name: '', sku: '', categoryId: '', price: '', costPrice: '', stock: '', description: '' })
     setIsAddingCategory(false)
     setNewCategoryName('')
     setIsAdding(false)
   }
 
-  const addCategory = () => {
+  const addCategory = async () => {
     const name = newCategoryName.trim()
     if (!name) return
 
-    const exists = categories.some(c => c.toLowerCase() === name.toLowerCase())
+    const exists = categories.find(c => c.name.toLowerCase() === name.toLowerCase())
     if (exists) {
-      setNewProduct(prev => ({ ...prev, category: name }))
+      setNewProduct(prev => ({ ...prev, categoryId: exists.id }))
       setIsAddingCategory(false)
       setNewCategoryName('')
       return
     }
 
-    setCategories(prev => [...prev, name])
-    setNewProduct(prev => ({ ...prev, category: name }))
+    try {
+      const res = await apiFetch('/api/products/categories', {
+        method: 'POST',
+        body: JSON.stringify({ name }),
+      })
+      const data = await res.json()
+      if (res.ok && data.category) {
+        setCategories(prev => [...prev, data.category])
+        setNewProduct(prev => ({ ...prev, categoryId: data.category.id }))
+      }
+    } catch {}
+
     setIsAddingCategory(false)
     setNewCategoryName('')
   }
 
-  const deleteSelectedCategory = () => {
-    const selected = newProduct.category
-    if (!selected) return
-
-    setCategories(prev => prev.filter(c => c !== selected))
-    setProducts(prev =>
-      prev.map(p => (p.category === selected ? { ...p, category: '' } : p))
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+      </div>
     )
-    setNewProduct(prev => ({ ...prev, category: '' }))
   }
 
   return (
@@ -132,6 +157,7 @@ export default function ProductsPage() {
           <thead className="bg-white/5 text-white/60">
             <tr>
               <th className="text-left p-4">Name</th>
+              <th className="text-left p-4">SKU</th>
               <th className="text-left p-4">Category</th>
               <th className="text-left p-4">Price</th>
               <th className="text-left p-4">Stock</th>
@@ -147,35 +173,34 @@ export default function ProductsPage() {
                 transition={{ delay: i * 0.05 }}
                 className="border-t border-white/10 hover:bg-white/5 transition"
               >
-                {/* Product */}
                 <td className="p-4 flex items-center gap-3">
                   <Package className="w-4 h-4 text-purple-400" />
                   {product.name}
                 </td>
 
+                <td className="p-4 text-white/70">{product.sku}</td>
+
                 <td className="p-4 text-white">
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4" />
-                    {product.category || '—'}
+                    {product.category?.name || '—'}
                   </div>
                 </td>
 
-                {/* Price */}
                 <td className="p-4 flex items-center gap-1">
                   <IndianRupee className="w-4 h-4 text-green-400" />
                   {product.price}
                 </td>
 
-                {/* Stock */}
                 <td className="p-4">
                   <span
                     className={`px-3 py-1 rounded-full text-xs ${
-                      product.stock > 10
+                      (product.inventory?.quantity ?? 0) > 10
                         ? 'bg-green-500/20 text-green-400'
                         : 'bg-red-500/20 text-red-400'
                     }`}
                   >
-                    {product.stock}units
+                    {product.inventory?.quantity ?? 0} units
                   </span>
                 </td>
               </motion.tr>
@@ -203,9 +228,7 @@ export default function ProductsPage() {
             <h2 className="text-lg font-semibold mb-4">Add New Product</h2>
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div>
-                <label className="block text-xs text-white/60 mb-1">
-                  Name
-                </label>
+                <label className="block text-xs text-white/60 mb-1">Name</label>
                 <input
                   name="name"
                   value={newProduct.name}
@@ -216,13 +239,22 @@ export default function ProductsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-white/60 mb-1">
-                  Category
-                </label>
+                <label className="block text-xs text-white/60 mb-1">SKU</label>
+                <input
+                  name="sku"
+                  value={newProduct.sku}
+                  onChange={handleChange}
+                  className="w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm outline-none focus:border-purple-500"
+                  placeholder="SKU (unique)"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-white/60 mb-1">Category</label>
                 <div className="flex items-stretch gap-2">
                   <select
-                    name="category"
-                    value={newProduct.category}
+                    name="categoryId"
+                    value={newProduct.categoryId}
                     onChange={(e) => {
                       setIsAddingCategory(false)
                       handleChange(e)
@@ -230,12 +262,10 @@ export default function ProductsPage() {
                     className="flex-1 rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm outline-none focus:border-purple-500"
                     required
                   >
-                    <option value="" disabled>
-                      Select category
-                    </option>
+                    <option value="" disabled>Select category</option>
                     {categories.map(category => (
-                      <option key={category} value={category}>
-                        {category}
+                      <option key={category.id} value={category.id}>
+                        {category.name}
                       </option>
                     ))}
                   </select>
@@ -247,16 +277,6 @@ export default function ProductsPage() {
                     title="Add category"
                   >
                     +
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={deleteSelectedCategory}
-                    disabled={!newProduct.category}
-                    className="px-3 rounded-lg border border-white/10 text-white/80 hover:bg-white/5 transition disabled:opacity-40 disabled:hover:bg-transparent"
-                    title="Delete selected category"
-                  >
-                    Del
                   </button>
                 </div>
 
@@ -288,11 +308,19 @@ export default function ProductsPage() {
                   </div>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-white/60 mb-1">Description</label>
+                <input
+                  name="description"
+                  value={newProduct.description}
+                  onChange={handleChange}
+                  className="w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm outline-none focus:border-purple-500"
+                  placeholder="Optional description"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs text-white/60 mb-1">
-                    Price
-                  </label>
+                  <label className="block text-xs text-white/60 mb-1">Price</label>
                   <input
                     name="price"
                     type="number"
@@ -305,9 +333,20 @@ export default function ProductsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-white/60 mb-1">
-                    Stock
-                  </label>
+                  <label className="block text-xs text-white/60 mb-1">Cost Price</label>
+                  <input
+                    name="costPrice"
+                    type="number"
+                    value={newProduct.costPrice}
+                    onChange={handleChange}
+                    className="w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm outline-none focus:border-purple-500"
+                    placeholder="Cost"
+                    required
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-white/60 mb-1">Stock</label>
                   <input
                     name="stock"
                     type="number"

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -19,6 +19,15 @@ export default function SalesLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const role = localStorage.getItem('role')
+      if (role !== 'SALES') {
+        router.push(role === 'ADMIN' ? '/adminDashboard' : '/login')
+      }
+    }
+  }, [router])
 
   const logout = () => {
     localStorage.removeItem('token')

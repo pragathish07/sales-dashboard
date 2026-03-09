@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   User,
@@ -13,34 +13,19 @@ import {
   ToggleLeft,
   ToggleRight
 } from 'lucide-react'
+import { apiFetch } from '@/lib/api'
 
 type SalesUser = {
   id: string
   name: string
   email: string
-  role: 'SALES'
-  active: boolean
+  role: string
+  createdAt: string
 }
 
-const initialUsers: SalesUser[] = [
-  {
-    id: '1',
-    name: 'Rahul Sharma',
-    email: 'rahul@example.com',
-    role: 'SALES',
-    active: true
-  },
-  {
-    id: '2',
-    name: 'Priya Verma',
-    email: 'priya@example.com',
-    role: 'SALES',
-    active: false
-  }
-]
-
 export default function UsersPage() {
-  const [users, setUsers] = useState(initialUsers)
+  const [users, setUsers] = useState<SalesUser[]>([])
+  const [loading, setLoading] = useState(true)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
 
   const [isAdding, setIsAdding] = useState(false)
@@ -57,6 +42,14 @@ export default function UsersPage() {
 
   const [newPassword, setNewPassword] = useState('')
 
+  useEffect(() => {
+    apiFetch('/api/users')
+      .then(r => r.json())
+      .then(data => setUsers(data.users || []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
   const resetForm = () => {
     setFormData({ name: '', email: '', password: '' })
   }
@@ -68,21 +61,27 @@ export default function UsersPage() {
 
   /* ================= ADD USER ================= */
 
-  const handleAddUser = (e: React.FormEvent) => {
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!formData.name || !formData.email || !formData.password) return
 
-    setUsers(prev => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        name: formData.name,
-        email: formData.email,
-        role: 'SALES',
-        active: true
+    try {
+      const res = await apiFetch('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: 'SALES',
+        }),
+      })
+
+      const data = await res.json()
+      if (res.ok && data.user) {
+        setUsers(prev => [...prev, data.user])
       }
-    ])
+    } catch {}
 
     resetForm()
     setIsAdding(false)
@@ -90,17 +89,29 @@ export default function UsersPage() {
 
   /* ================= EDIT USER ================= */
 
-  const handleEditUser = (e: React.FormEvent) => {
+  const handleEditUser = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedUser) return
 
-    setUsers(prev =>
-      prev.map(user =>
-        user.id === selectedUser.id
-          ? { ...user, name: formData.name, email: formData.email }
-          : user
-      )
-    )
+    try {
+      const res = await apiFetch('/api/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+        }),
+      })
+
+      if (res.ok) {
+        setUsers(prev =>
+          prev.map(user =>
+            user.id === selectedUser.id
+              ? { ...user, name: formData.name, email: formData.email }
+              : user
+          )
+        )
+      }
+    } catch {}
 
     resetForm()
     setSelectedUser(null)
@@ -109,33 +120,39 @@ export default function UsersPage() {
 
   /* ================= DELETE USER ================= */
 
-  const handleDeleteUser = (id: string) => {
-    setUsers(prev => prev.filter(user => user.id !== id))
-    setOpenMenu(null)
-  }
+  const handleDeleteUser = async (id: string) => {
+    try {
+      const res = await apiFetch(`/api/auth/users/${id}`, {
+        method: 'DELETE',
+      })
 
-  /* ================= TOGGLE ACTIVE ================= */
-
-  const toggleActive = (id: string) => {
-    setUsers(prev =>
-      prev.map(user =>
-        user.id === id
-          ? { ...user, active: !user.active }
-          : user
-      )
-    )
+      if (res.ok) {
+        setUsers(prev => prev.filter(user => user.id !== id))
+      }
+    } catch {}
     setOpenMenu(null)
   }
 
   /* ================= RESET PASSWORD ================= */
 
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Reset password for:', selectedUser?.id, newPassword)
+    if (!selectedUser) return
+
+    // Note: In a real admin flow, you'd have a dedicated admin reset endpoint
+    console.log('Reset password for:', selectedUser.id, newPassword)
 
     setNewPassword('')
     setIsResetting(false)
     setSelectedUser(null)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
   }
 
   return (
@@ -172,7 +189,7 @@ export default function UsersPage() {
             <tr>
               <th className="text-left p-4">Name</th>
               <th className="text-left p-4">Email</th>
-              <th className="text-left p-4">Status</th>
+              <th className="text-left p-4">Role</th>
               <th className="text-left p-4">Actions</th>
             </tr>
           </thead>
@@ -198,11 +215,11 @@ export default function UsersPage() {
 
                 <td className="p-4">
                   <span className={`px-3 py-1 rounded-full text-xs ${
-                    user.active
-                      ? 'bg-green-500/20 text-green-400'
-                      : 'bg-red-500/20 text-red-400'
+                    user.role === 'ADMIN'
+                      ? 'bg-purple-500/20 text-purple-400'
+                      : 'bg-blue-500/20 text-blue-400'
                   }`}>
-                    {user.active ? 'Active' : 'Inactive'}
+                    {user.role}
                   </span>
                 </td>
 
@@ -235,19 +252,6 @@ export default function UsersPage() {
                         className="flex items-center gap-2 w-full px-4 py-2 hover:bg-white/5"
                       >
                         <Pencil className="w-4 h-4" /> Edit
-                      </button>
-
-                      {/* Toggle Active */}
-                      <button
-                        onClick={() => toggleActive(user.id)}
-                        className="flex items-center gap-2 w-full px-4 py-2 hover:bg-white/5"
-                      >
-                        {user.active ? (
-                          <ToggleLeft className="w-4 h-4" />
-                        ) : (
-                          <ToggleRight className="w-4 h-4" />
-                        )}
-                        {user.active ? 'Deactivate' : 'Activate'}
                       </button>
 
                       {/* Reset Password */}
@@ -309,9 +313,10 @@ export default function UsersPage() {
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Password"
+                placeholder="Password (min 6 chars)"
                 className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg"
                 required
+                minLength={6}
               />
 
               <div className="flex justify-end gap-3">

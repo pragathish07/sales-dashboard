@@ -51,7 +51,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const res = await fetch('https://6997437c7d1786436576c91f.mockapi.io/api/products/auth', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -60,19 +60,19 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || data.error || 'Invalid email or password')
+        setError(data.message || 'Invalid email or password')
         return
-    }   
-
+      }
 
       localStorage.setItem('token', data.token)
+      localStorage.setItem('role', data.user.role)
 
-      if (data.role === 'admin') router.push('/adminDashboard')
-      else if (data.role === 'sales_user') router.push('/sales_user')
+      if (data.user.role === 'ADMIN') router.push('/adminDashboard')
+      else if (data.user.role === 'SALES') router.push('/sales_user')
       else router.push('/')
 
     } catch (err) {
-      setError('Wrong credentials. Please try again.')
+      setError('Unable to connect to server. Please try again.')
     } finally {
       setIsLoading(false)
     }

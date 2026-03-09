@@ -1,94 +1,82 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, DollarSign, FileText } from 'lucide-react'
+import { apiFetch } from '@/lib/api'
 
 type Order = {
   id: string
-  customer: string
-  total: number
-  date: string
-  status: 'Completed' | 'Pending' | 'Cancelled'
-}
-
-const generateDummyOrders = (count: number): Order[] => {
-  const orders: Order[] = []
-  for (let i = 1; i <= count; i++) {
-    orders.push({
-      id: i.toString(),
-      customer: `Customer ${i}`,
-      total: Math.floor(Math.random() * 5000) + 500,
-      date: new Date(Date.now() - i * 86400000).toISOString().split('T')[0],
-      status: i % 3 === 0 ? 'Cancelled' : i % 4 === 0 ? 'Pending' : 'Completed'
-    })
-  }
-  return orders
+  customer: { name: string }
+  totalAmount: number
+  createdAt: string
+  status: 'PENDING' | 'PAID' | 'CANCELLED' | 'REFUNDED'
 }
 
 export default function OrdersPage() {
-  const allOrders = generateDummyOrders(45)
-  const [orders, setOrders] = useState(allOrders)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const perPage = 10
 
   const [sortField, setSortField] = useState<'date' | 'total'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
+  useEffect(() => {
+    apiFetch('/api/orders')
+      .then(r => r.json())
+      .then(data => setOrders(data.orders || []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  // Sorting
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (sortField === 'date') {
+      return sortOrder === 'asc'
+        ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    } else {
+      return sortOrder === 'asc'
+        ? a.totalAmount - b.totalAmount
+        : b.totalAmount - a.totalAmount
+    }
+  })
+
   // Pagination
-  const paginatedOrders = orders.slice((page - 1) * perPage, page * perPage)
+  const paginatedOrders = sortedOrders.slice((page - 1) * perPage, page * perPage)
   const nextPage = () => {
-    if (page * perPage < orders.length) setPage(prev => prev + 1)
+    if (page * perPage < sortedOrders.length) setPage(prev => prev + 1)
   }
   const prevPage = () => {
     if (page > 1) setPage(prev => prev - 1)
   }
 
-  // Sorting
-  const sortOrders = (field: 'date' | 'total', order: 'asc' | 'desc') => {
-    const sorted = [...orders].sort((a, b) => {
-      if (field === 'date') return order === 'asc' ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)
-      else {
-        if (a.total === b.total) return a.date.localeCompare(b.date) // tie-breaker
-        return order === 'asc' ? a.total - b.total : b.total - a.total
-      }
-    })
-    setOrders(sorted)
-  }
-
-  const handleSortFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const field = e.target.value as 'date' | 'total'
-    setSortField(field)
-    sortOrders(field, sortOrder)
-  }
-
-  const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const order = e.target.value as 'asc' | 'desc'
-    setSortOrder(order)
-    sortOrders(sortField, order)
-  }
-
-  // =================== KPI CARDS ===================
-  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0)
+  // KPI
+  const totalRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0)
   const avgOrder = orders.length ? (totalRevenue / orders.length).toFixed(2) : 0
-  const completedCount = orders.filter(o => o.status === 'Completed').length
-  const pendingCount = orders.filter(o => o.status === 'Pending').length
-  const cancelledCount = orders.filter(o => o.status === 'Cancelled').length
+  const completedCount = orders.filter(o => o.status === 'PAID').length
+  const pendingCount = orders.filter(o => o.status === 'PENDING').length
 
-  // =================== Alerts ===================
-  const highValueOrders = orders.filter(o => o.total > 4000)
+  // Alerts
+  const highValueOrders = orders.filter(o => o.totalAmount > 4000)
   const oldPendingOrders = orders.filter(o => {
-    const orderDate = new Date(o.date)
+    const orderDate = new Date(o.createdAt)
     const diffDays = (Date.now() - orderDate.getTime()) / (1000 * 3600 * 24)
-    return o.status === 'Pending' && diffDays > 5
+    return o.status === 'PENDING' && diffDays > 5
   })
 
-  // =================== Export CSV ===================
+  // Export CSV
   const exportCSV = () => {
     const csvContent =
       'data:text/csv;charset=utf-8,' +
       ['ID,Customer,Date,Total,Status']
-        .concat(orders.map(o => `${o.id},${o.customer},${o.date},${o.total},${o.status}`))
+        .concat(
+          orders.map(
+            o =>
+              `${o.id},${o.customer?.name || 'N/A'},${new Date(o.createdAt).toISOString().split('T')[0]},${o.totalAmount},${o.status}`
+          )
+        )
         .join('\n')
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
@@ -97,6 +85,14 @@ export default function OrdersPage() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
   }
 
   return (
@@ -124,7 +120,7 @@ export default function OrdersPage() {
         </div>
         <div className="bg-black/40 rounded-2xl p-4 text-center">
           <div className="text-sm text-white/60">Total Revenue</div>
-          <div className="text-xl font-semibold">₹{totalRevenue}</div>
+          <div className="text-xl font-semibold">₹{totalRevenue.toLocaleString()}</div>
         </div>
         <div className="bg-black/40 rounded-2xl p-4 text-center">
           <div className="text-sm text-white/60">Avg Order</div>
@@ -158,7 +154,7 @@ export default function OrdersPage() {
       <div className="flex justify-end gap-2 mb-2">
         <select
           value={sortField}
-          onChange={handleSortFieldChange}
+          onChange={(e) => { setSortField(e.target.value as 'date' | 'total'); setPage(1) }}
           className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm"
         >
           <option value="date">Sort by Date</option>
@@ -166,7 +162,7 @@ export default function OrdersPage() {
         </select>
         <select
           value={sortOrder}
-          onChange={handleSortOrderChange}
+          onChange={(e) => { setSortOrder(e.target.value as 'asc' | 'desc'); setPage(1) }}
           className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm"
         >
           <option value="asc">Ascending</option>
@@ -183,7 +179,6 @@ export default function OrdersPage() {
         <table className="w-full text-sm">
           <thead className="bg-white/5 text-white/60">
             <tr>
-              <th className="text-left p-4">ID</th>
               <th className="text-left p-4">Customer</th>
               <th className="text-left p-4">Date</th>
               <th className="text-left p-4">Total</th>
@@ -199,22 +194,27 @@ export default function OrdersPage() {
                 transition={{ delay: i * 0.03 }}
                 className="border-t border-white/10 hover:bg-white/5 transition"
               >
-                <td className="p-4">{order.id}</td>
-                <td className="p-4">{order.customer}</td>
+                <td className="p-4">{order.customer?.name || 'N/A'}</td>
                 <td className="p-4 flex items-center gap-1">
-                  <Calendar className="w-4 h-4 text-blue-400" /> {order.date}
+                  <Calendar className="w-4 h-4 text-blue-400" />
+                  {new Date(order.createdAt).toLocaleDateString()}
                 </td>
-                <td className="p-4 flex items-center gap-1">
-                  <DollarSign className="w-4 h-4 text-green-400" /> {order.total}
+                <td className="p-4">
+                  <span className="flex items-center gap-1">
+                    <DollarSign className="w-4 h-4 text-green-400" />
+                    {order.totalAmount.toLocaleString()}
+                  </span>
                 </td>
                 <td className="p-4">
                   <span
                     className={`px-3 py-1 rounded-full text-xs ${
-                      order.status === 'Completed'
+                      order.status === 'PAID'
                         ? 'bg-green-500/20 text-green-400'
-                        : order.status === 'Pending'
+                        : order.status === 'PENDING'
                         ? 'bg-yellow-500/20 text-yellow-400'
-                        : 'bg-red-500/20 text-red-400'
+                        : order.status === 'CANCELLED'
+                        ? 'bg-red-500/20 text-red-400'
+                        : 'bg-purple-500/20 text-purple-400'
                     }`}
                   >
                     {order.status}
@@ -235,9 +235,12 @@ export default function OrdersPage() {
         >
           Previous
         </button>
+        <span className="text-white/60 text-sm self-center">
+          Page {page} of {Math.ceil(sortedOrders.length / perPage) || 1}
+        </span>
         <button
           onClick={nextPage}
-          disabled={page * perPage >= orders.length}
+          disabled={page * perPage >= sortedOrders.length}
           className="px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 disabled:opacity-50"
         >
           Next

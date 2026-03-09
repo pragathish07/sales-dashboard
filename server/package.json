@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "seed": "ts-node-dev --transpile-only prisma/seed.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "prisma": {
+    "seed": "npx ts-node-dev --transpile-only prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
