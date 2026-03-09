@@ -11,9 +11,9 @@ import { validate } from "../../middleware/validate";
 import {
   registerSchema,
   loginSchema,
-} from "./auth.validation";
+} from "./auth.validate";
 
-import { verifyToken } from "../../middleware/auth.middleware.ts";
+import { verifyToken } from "../../middleware/auth.middleware";
 
 const router = Router();
 

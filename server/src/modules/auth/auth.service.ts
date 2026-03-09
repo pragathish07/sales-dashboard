@@ -1,6 +1,6 @@
 // src/modules/auth/auth.service.ts
 
-import prisma from "../../config/db";
+import { prisma } from "../../config/adapter";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 

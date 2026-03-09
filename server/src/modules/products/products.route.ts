@@ -6,20 +6,15 @@ import {
   updateProduct,
   deleteProduct,
 } from "./products.controller";
-import { authenticate } from "../../middleware/auth.middleware";
-import { authorize } from "../../middleware/role.middleware";
+import { verifyToken, authorize } from "../../middleware/auth.middleware";
+
  
 const router = Router();
  
-router.post("/", createProduct);
-router.get("/",getProducts);
-router.get("/:id", getProductById);
-router.put("/:id",  updateProduct);
-router.delete("/:id", deleteProduct);
-// router.post("/", authenticate, authorize(["ADMIN"]), createProduct);
-// router.get("/", authenticate, getProducts);
-// router.get("/:id", authenticate, getProductById);
-// router.put("/:id", authenticate, authorize(["ADMIN"]), updateProduct);
-// router.delete("/:id", authenticate, authorize(["ADMIN"]), deleteProduct);
+router.post("/", verifyToken, authorize(["ADMIN"]), createProduct);
+router.get("/", verifyToken, getProducts);
+router.get("/:id", verifyToken, getProductById);
+router.put("/:id", verifyToken, authorize(["ADMIN"]), updateProduct);
+router.delete("/:id", verifyToken, authorize(["ADMIN"]), deleteProduct);
  
 export default router;
