@@ -8,6 +8,7 @@ import customersRouter from './modules/customers/customers.route';
 import productRoutes from './modules/products/products.route';
 import categoryRoutes from './modules/category/category.route';
 import authRoutes from './modules/auth/auth.route';
+import inventoryRoutes from './modules/inventory/inventory.route';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 
 // Customers Routes
