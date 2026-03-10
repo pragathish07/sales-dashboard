@@ -11,6 +11,7 @@ type Order = {
   totalAmount: number
   createdAt: string
   status: 'PENDING' | 'PAID' | 'CANCELLED' | 'REFUNDED'
+  salesUser?: { id: string; name: string; email: string } | null
 }
 
 export default function OrdersPage() {
@@ -21,17 +22,21 @@ export default function OrdersPage() {
 
   const [sortField, setSortField] = useState<'date' | 'total'>('date')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [salesFilter, setSalesFilter] = useState<string>('all')
 
   useEffect(() => {
-    apiFetch('/api/orders')
+    apiFetch('/api/orders/sales')
       .then(r => r.json())
       .then(data => setOrders(data.orders || []))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
+  // Filtering
+  const filteredOrders = salesFilter === 'all' ? orders : orders.filter(o => o.salesUser?.id === salesFilter)
+
   // Sorting
-  const sortedOrders = [...orders].sort((a, b) => {
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
     if (sortField === 'date') {
       return sortOrder === 'asc'
         ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -153,6 +158,17 @@ export default function OrdersPage() {
       {/* Sorting */}
       <div className="flex justify-end gap-2 mb-2">
         <select
+          value={salesFilter}
+          onChange={(e) => { setSalesFilter(e.target.value); setPage(1) }}
+          className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm"
+        >
+          <option value="all">All Sales Users</option>
+          {[...new Map(orders.filter(o => o.salesUser).map(o => [o.salesUser!.id, o.salesUser!])).values()].map(s => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+
+        <select
           value={sortField}
           onChange={(e) => { setSortField(e.target.value as 'date' | 'total'); setPage(1) }}
           className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm"
@@ -182,6 +198,7 @@ export default function OrdersPage() {
               <th className="text-left p-4">Customer</th>
               <th className="text-left p-4">Date</th>
               <th className="text-left p-4">Total</th>
+              <th className="text-left p-4">Sales</th>
               <th className="text-left p-4">Status</th>
             </tr>
           </thead>
@@ -205,6 +222,7 @@ export default function OrdersPage() {
                     {order.totalAmount.toLocaleString()}
                   </span>
                 </td>
+                <td className="p-4">{order.salesUser?.name || '—'}</td>
                 <td className="p-4">
                   <span
                     className={`px-3 py-1 rounded-full text-xs ${

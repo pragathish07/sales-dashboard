@@ -11,6 +11,26 @@ export const getAllOrders = async () => {
   });
 };
 
+// Returns orders and attaches a `salesUser` field when the creating user has role SALES
+export const getOrdersWithSalesUser = async () => {
+  const orders = await prisma.order.findMany({
+    include: {
+      customer: true,
+      user: { select: { id: true, name: true, email: true, role: true } },
+      items: { include: { product: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Map orders to include a salesUser field when applicable
+  return orders.map((order) => {
+    const salesUser = order.user?.role === "SALES"
+      ? { id: order.user.id, name: order.user.name, email: order.user.email }
+      : null;
+    return { ...order, salesUser };
+  });
+};
+
 export const getOrdersByUser = async (userId: string) => {
   return prisma.order.findMany({
     where: { userId },
@@ -21,6 +41,8 @@ export const getOrdersByUser = async (userId: string) => {
     orderBy: { createdAt: "desc" },
   });
 };
+
+
 
 export const createOrder = async (data: {
   customerId: string;

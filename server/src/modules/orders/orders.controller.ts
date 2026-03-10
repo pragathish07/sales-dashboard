@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import e, { Request, Response } from "express";
 import * as ordersService from "./orders.service";
 
 export const getOrders = async (req: any, res: Response) => {
@@ -37,3 +37,15 @@ export const updateStatus = async (req: Request, res: Response) => {
     res.status(400).json({ message: "Error updating order", error: error.message });
   }
 };
+
+
+export const getOrdersBySalesUser = async (req: Request, res: Response) => {
+  try {
+    
+    const orders = await ordersService.getOrdersWithSalesUser();
+    res.json({ orders });
+  } catch (error: any) {
+    res.status(500).json({ message: "Error fetching orders", error: error.message });
+  }
+
+}

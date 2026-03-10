@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // change to "mysql" if needed
+  provider = "postgresql" 
 }
 
 //////////////////////////////////////////////////////
