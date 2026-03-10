@@ -1,5 +1,3 @@
-// Type definitions for Orders module
-
 export interface OrderItem {
   productId: string;
   quantity: number;

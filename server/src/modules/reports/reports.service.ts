@@ -48,14 +48,12 @@ export const getSalesStats = async (userId: string) => {
   const ordersCount = userOrders.length;
   const avgOrderValue = ordersCount > 0 ? totalSales / ordersCount : 0;
 
-  // Today's sales
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todaySales = userOrders
     .filter((o) => o.createdAt >= todayStart)
     .reduce((sum, o) => sum + o.totalAmount, 0);
 
-  // Recent orders (last 10)
   const recentOrders = userOrders.slice(0, 10).map((o) => ({
     id: o.id,
     customer: o.customer.name,
@@ -64,7 +62,6 @@ export const getSalesStats = async (userId: string) => {
     date: o.createdAt,
   }));
 
-  // Sales by date (last 30 days)
   const salesByDate: { date: string; sales: number }[] = [];
   for (let i = 29; i >= 0; i--) {
     const d = new Date();

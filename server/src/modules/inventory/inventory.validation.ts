@@ -1,5 +1,3 @@
-// src/modules/inventory/inventory.validation.ts
-
 import { z } from "zod";
 
 export const createInventorySchema = z.object({

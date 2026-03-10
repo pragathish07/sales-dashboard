@@ -1,19 +1,14 @@
-// src/modules/inventory/inventory.service.ts
-
 import { prisma } from '../../config/adapter';
 import { CreateInventoryRequest, UpdateInventoryRequest, InventoryItem, GetInventoryFilter } from './inventory.types';
 
 export class InventoryService {
-  // Create new inventory record for a product
   async createInventory(inventoryData: CreateInventoryRequest): Promise<InventoryItem> {
     try {
-      // Check if product exists
       const product = await prisma.product.findUnique({
         where: { id: inventoryData.productId }
       });
       if (!product) throw new Error('Product not found');
 
-      // Check if inventory already exists for this product
       const existingInventory = await prisma.inventory.findUnique({
         where: { productId: inventoryData.productId }
       });
@@ -38,7 +33,6 @@ export class InventoryService {
     }
   }
 
-  // Get all inventory items with filters
   async getAllInventory(filters: GetInventoryFilter = {}): Promise<{ items: InventoryItem[]; total: number }> {
     try {
       const {
@@ -50,7 +44,6 @@ export class InventoryService {
         sortOrder = 'desc'
       } = filters;
 
-      // Build where clause
       const where: any = {};
       if (productId) where.productId = productId;
       if (lowStock) {
@@ -86,7 +79,6 @@ export class InventoryService {
     }
   }
 
-  // Get inventory by product ID
   async getInventoryByProductId(productId: string): Promise<InventoryItem> {
     try {
       const inventory = await prisma.inventory.findUnique({
@@ -110,7 +102,6 @@ export class InventoryService {
     }
   }
 
-  // Update inventory
   async updateInventory(productId: string, updateData: UpdateInventoryRequest): Promise<InventoryItem> {
     try {
       const inventory = await prisma.inventory.findUnique({
@@ -141,7 +132,6 @@ export class InventoryService {
     }
   }
 
-  // Delete inventory record
   async deleteInventory(productId: string): Promise<void> {
     try {
       const inventory = await prisma.inventory.findUnique({
@@ -157,7 +147,6 @@ export class InventoryService {
     }
   }
 
-  // Adjust inventory quantity (for order fulfillment)
   async adjustQuantity(productId: string, quantityChange: number): Promise<InventoryItem> {
     try {
       const inventory = await prisma.inventory.findUnique({
@@ -191,7 +180,6 @@ export class InventoryService {
     }
   }
 
-  // Get low stock alerts
   async getLowStockAlerts(): Promise<InventoryItem[]> {
     try {
       const lowStockItems = await prisma.inventory.findMany({
@@ -220,7 +208,6 @@ export class InventoryService {
     }
   }
 
-  // Helper method to format inventory response
   private formatInventoryResponse(inventory: any): InventoryItem {
     return {
       id: inventory.id,

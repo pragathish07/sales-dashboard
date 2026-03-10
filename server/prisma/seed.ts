@@ -11,9 +11,9 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log("🌱 Seeding database...\n");
+  console.log("Seeding database...\n");
 
-  // --- ADMIN USER ---
+  
   const adminPassword = await bcrypt.hash("admin123", 10);
   const admin = await prisma.user.upsert({
     where: { email: "admin@example.com" },
@@ -25,9 +25,9 @@ async function main() {
       role: "ADMIN",
     },
   });
-  console.log(`✅ Admin user: ${admin.email} (password: admin123)`);
+  console.log(`Admin user: ${admin.email} (password: admin123)`);
 
-  // --- SALES USER ---
+  
   const salesPassword = await bcrypt.hash("sales123", 10);
   const salesUser = await prisma.user.upsert({
     where: { email: "sales@example.com" },
@@ -39,9 +39,9 @@ async function main() {
       role: "SALES",
     },
   });
-  console.log(`✅ Sales user: ${salesUser.email} (password: sales123)`);
+  console.log(`Sales user: ${salesUser.email} (password: sales123)`);
 
-  // --- CATEGORIES ---
+  
   const categories = ["Electronics", "Accessories", "Home Appliances", "Clothing"];
   const createdCategories = [];
 
@@ -53,9 +53,9 @@ async function main() {
     });
     createdCategories.push(cat);
   }
-  console.log(`✅ Created ${createdCategories.length} categories`);
+  console.log(`Created ${createdCategories.length} categories`);
 
-  // --- SAMPLE PRODUCTS ---
+
   const sampleProducts = [
     {
       name: "Laptop",
@@ -115,9 +115,9 @@ async function main() {
       });
     }
   }
-  console.log(`✅ Created ${sampleProducts.length} sample products`);
+  console.log(`Created ${sampleProducts.length} sample products`);
 
-  // --- SAMPLE CUSTOMER ---
+  
   const customer = await prisma.customer.upsert({
     where: { id: "seed-customer-1" },
     update: {},
@@ -128,7 +128,7 @@ async function main() {
       address: "Mumbai, India",
     },
   });
-  console.log(`✅ Sample customer: ${customer.name}`);
+  console.log(`Sample customer: ${customer.name}`);
 
   console.log("\n🎉 Seed complete! You can now log in:");
   console.log("   Admin  → admin@example.com / admin123");
@@ -137,7 +137,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error("❌ Seed error:", e);
+    console.error("Seed error:", e);
     process.exit(1);
   })
   .finally(async () => {

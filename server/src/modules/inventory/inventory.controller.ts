@@ -1,5 +1,3 @@
-// src/modules/inventory/inventory.controller.ts
-
 import { Response } from 'express';
 import { AuthRequest } from '../../middleware/user.middleware';
 import { InventoryService } from './inventory.service';
@@ -7,12 +5,10 @@ import { CreateInventoryRequest, UpdateInventoryRequest, InventoryResponse, GetI
 
 const inventoryService = new InventoryService();
 
-// Create new inventory record
 export const createInventory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const inventoryData: CreateInventoryRequest = req.body;
 
-    // Basic validation
     if (!inventoryData.productId || inventoryData.quantity === undefined || inventoryData.reorderLevel === undefined) {
       res.status(400).json({
         success: false,
@@ -43,7 +39,7 @@ export const createInventory = async (req: AuthRequest, res: Response): Promise<
   }
 };
 
-// Get all inventory items with filters
+
 export const getAllInventory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const filters: GetInventoryFilter = {
@@ -70,7 +66,7 @@ export const getAllInventory = async (req: AuthRequest, res: Response): Promise<
   }
 };
 
-// Get inventory by product ID
+
 export const getInventoryByProductId = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const productId = Array.isArray(req.params.productId) ? req.params.productId[0] : req.params.productId;
@@ -103,7 +99,7 @@ export const getInventoryByProductId = async (req: AuthRequest, res: Response): 
   }
 };
 
-// Update inventory
+
 export const updateInventory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const productId = Array.isArray(req.params.productId) ? req.params.productId[0] : req.params.productId;
@@ -162,7 +158,7 @@ export const updateInventory = async (req: AuthRequest, res: Response): Promise<
   }
 };
 
-// Delete inventory record
+
 export const deleteInventory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const productId = Array.isArray(req.params.productId) ? req.params.productId[0] : req.params.productId;
@@ -195,7 +191,7 @@ export const deleteInventory = async (req: AuthRequest, res: Response): Promise<
   }
 };
 
-// Adjust inventory quantity
+
 export const adjustInventoryQuantity = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const productId = Array.isArray(req.params.productId) ? req.params.productId[0] : req.params.productId;
@@ -238,7 +234,7 @@ export const adjustInventoryQuantity = async (req: AuthRequest, res: Response): 
   }
 };
 
-// Get low stock alerts
+
 export const getLowStockAlerts = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const lowStockItems = await inventoryService.getLowStockAlerts();

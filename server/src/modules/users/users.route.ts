@@ -1,5 +1,3 @@
-// src/modules/users/users.routes.ts
-
 import { Router } from "express";
 import { createUser, getAllUsers } from "./users.controller";
 //import { authenticateToken } from "./users.middleware";

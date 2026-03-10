@@ -1,5 +1,3 @@
-// src/modules/inventory/inventory.types.ts
-
 export interface InventoryItem {
   id: string;
   productId: string;

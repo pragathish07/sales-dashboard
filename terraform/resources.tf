@@ -1,4 +1,3 @@
-# --- VPC ---
 resource "aws_vpc" "sales_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
@@ -9,7 +8,6 @@ resource "aws_vpc" "sales_vpc" {
   }
 }
 
-# --- Public Subnet 1 ---
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.sales_vpc.id
   cidr_block              = "10.0.1.0/24"
@@ -21,7 +19,6 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 
-# --- Public Subnet 2 (required for ALB) ---
 resource "aws_subnet" "public_subnet_2" {
   vpc_id                  = aws_vpc.sales_vpc.id
   cidr_block              = "10.0.2.0/24"
@@ -33,7 +30,6 @@ resource "aws_subnet" "public_subnet_2" {
   }
 }
 
-# --- Internet Gateway ---
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.sales_vpc.id
 
@@ -42,7 +38,6 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-# --- Route Table ---
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.sales_vpc.id
 
@@ -66,7 +61,6 @@ resource "aws_route_table_association" "public_rt_assoc_2" {
   route_table_id = aws_route_table.public_rt.id
 }
 
-# --- Security Group ---
 resource "aws_security_group" "sales_sg" {
   name        = "sales-dashboard-sg"
   description = "Allow SSH and HTTP/HTTPS traffic"
@@ -108,7 +102,6 @@ resource "aws_security_group" "sales_sg" {
   }
 }
 
-# --- EC2 Instance ---
 resource "aws_instance" "sales_dashboard" {
   ami                    = "ami-0e35ddab05955cf57" # Ubuntu 22.04 LTS in ap-south-1
   instance_type          = "t3.micro"
@@ -126,13 +119,11 @@ resource "aws_instance" "sales_dashboard" {
   }
 }
 
-# --- Elastic IP ---
 resource "aws_eip" "sales_eip" {
   instance = aws_instance.sales_dashboard.id
   domain   = "vpc"
 }
 
-# --- ALB Security Group ---
 resource "aws_security_group" "alb_sg" {
   name        = "sales-dashboard-alb-sg"
   description = "Allow HTTP/HTTPS to ALB"
@@ -166,7 +157,6 @@ resource "aws_security_group" "alb_sg" {
   }
 }
 
-# --- Application Load Balancer ---
 resource "aws_lb" "sales_alb" {
   name               = "sales-dashboard-alb"
   internal           = false
@@ -179,7 +169,6 @@ resource "aws_lb" "sales_alb" {
   }
 }
 
-# --- Target Group (points to nginx on port 80) ---
 resource "aws_lb_target_group" "sales_tg" {
   name     = "sales-dashboard-tg"
   port     = 80
@@ -202,14 +191,12 @@ resource "aws_lb_target_group" "sales_tg" {
   }
 }
 
-# --- Register EC2 instance with Target Group ---
 resource "aws_lb_target_group_attachment" "sales_tg_attachment" {
   target_group_arn = aws_lb_target_group.sales_tg.arn
   target_id        = aws_instance.sales_dashboard.id
   port             = 80
 }
 
-# --- ALB Listener (HTTP on port 80) ---
 resource "aws_lb_listener" "http_listener" {
   load_balancer_arn = aws_lb.sales_alb.arn
   port              = 80

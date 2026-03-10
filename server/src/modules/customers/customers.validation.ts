@@ -1,5 +1,3 @@
-// src/modules/customers/customers.validation.ts
-
 import { z } from "zod";
 
 export const createCustomerSchema = z.object({
