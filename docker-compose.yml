@@ -29,7 +29,7 @@ services:
     build: ./nginx
     restart: always
     ports:
-      - "9090:9090"
+      - "80:9090"
     depends_on:
       - server
       - client

@@ -99,6 +99,11 @@ resource "aws_instance" "sales_dashboard" {
   vpc_security_group_ids = [aws_security_group.sales_sg.id]
   key_name               = "main-wsl"
 
+  root_block_device {
+    volume_size = 20
+    volume_type = "gp3"
+  }
+
   tags = {
     Name = "sales-dashboard"
   }
