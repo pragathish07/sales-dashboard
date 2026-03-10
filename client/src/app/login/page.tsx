@@ -29,7 +29,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // 3D Card Effect
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
   const rotateX = useTransform(mouseY, [-300, 300], [10, -10])
@@ -46,7 +45,6 @@ export default function LoginPage() {
     mouseY.set(0)
   }
 
-  // 🔐 REAL LOGIN HANDLER
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -62,19 +60,19 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || data.error || 'Invalid email or password')
+        setError(data.message || 'Invalid email or password')
         return
-    }   
-
+      }
 
       localStorage.setItem('token', data.token)
+      localStorage.setItem('role', data.user.role)
 
-      if (data.role === 'admin') router.push('/admin')
-      else if (data.role === 'sales_user') router.push('/sales_user')
-      else router.push('/dashboard')
+      if (data.user.role === 'ADMIN') router.push('/adminDashboard')
+      else if (data.user.role === 'SALES') router.push('/sales_user')
+      else router.push('/')
 
     } catch (err) {
-      setError('Wrong credentials. Please try again.')
+      setError('Unable to connect to server. Please try again.')
     } finally {
       setIsLoading(false)
     }
