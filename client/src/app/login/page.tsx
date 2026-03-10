@@ -80,7 +80,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
-      {/* Background */}
+     
       <div className="absolute inset-0 bg-gradient-to-b from-purple-600/40 via-purple-900/60 to-black" />
 
       <motion.div
@@ -98,7 +98,7 @@ export default function LoginPage() {
         >
           <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-2xl">
 
-            {/* Header */}
+            
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
                 Sales Dashboard
@@ -108,7 +108,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Error */}
+           
             {error && (
               <motion.p
                 initial={{ opacity: 0, y: -4 }}
@@ -119,10 +119,9 @@ export default function LoginPage() {
               </motion.p>
             )}
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
 
-              {/* Email */}
+              
               <div className="relative">
                 <Mail className="absolute left-3 top-3 w-4 h-4 text-white/40" />
                 <Input
@@ -134,7 +133,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Password */}
+              
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-4 h-4 text-white/40" />
                 <Input
@@ -156,7 +155,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Button */}
+              
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}

@@ -50,7 +50,6 @@ export default function SalesOrdersPage() {
   const downloadInvoice = (order: Order) => {
     const doc = new jsPDF()
 
-    // Title
     doc.setFontSize(20)
     doc.text('INVOICE', 105, 15, { align: 'center' })
 
@@ -59,7 +58,6 @@ export default function SalesOrdersPage() {
     doc.text(`Date: ${new Date(order.createdAt).toLocaleString()}`, 14, 31)
     doc.text(`Status: ${order.status}`, 14, 37)
 
-    // Customer Details
     doc.setFontSize(12)
     doc.text('Customer Details', 14, 47)
     doc.setFontSize(10)
@@ -67,7 +65,6 @@ export default function SalesOrdersPage() {
     doc.text(`Phone: ${order.customer?.phone || 'N/A'}`, 14, 59)
     doc.text(`Address: ${order.customer?.address || 'N/A'}`, 14, 65)
 
-    // Table Data
     const tableColumn = ['Product', 'Quantity', 'Price', 'Subtotal']
     const tableRows = order.items?.map(i => [
       i.product.name,
@@ -81,10 +78,9 @@ export default function SalesOrdersPage() {
       head: [tableColumn],
       body: tableRows,
       theme: 'striped',
-      headStyles: { fillColor: [168, 85, 247] } // Purple match
+      headStyles: { fillColor: [168, 85, 247] } 
     })
 
-    // Total
     const finalY = (doc as any).lastAutoTable.finalY || 72
     doc.setFontSize(12)
     doc.text(`Total Amount: Rs. ${order.totalAmount.toLocaleString()}`, 14, finalY + 10)
@@ -92,7 +88,6 @@ export default function SalesOrdersPage() {
     doc.setFontSize(10)
     doc.text('Thank you for your business!', 105, finalY + 25, { align: 'center' })
 
-    // Save PDF
     doc.save(`Invoice_${order.id.slice(0, 8)}.pdf`)
   }
 

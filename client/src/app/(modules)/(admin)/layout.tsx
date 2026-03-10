@@ -60,10 +60,10 @@ const handleLogout = () => {
   return (
     <div className="min-h-screen bg-black relative flex overflow-hidden">
 
-      {/* Background Gradient (same as login) */}
+      
       <div className="absolute inset-0 bg-gradient-to-b from-purple-600/40 via-purple-900/60 to-black" />
 
-      {/* Sidebar */}
+     
       <motion.aside
         initial={{ x: -40, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -73,14 +73,14 @@ const handleLogout = () => {
                    border border-white/10
                    shadow-2xl p-4 flex flex-col"
       >
-        {/* Logo */}
+        
         <h1 className="text-xl font-bold mb-8 text-center
           bg-gradient-to-r from-purple-400 to-pink-500
           text-transparent bg-clip-text">
           Sales Dashboard
         </h1>
 
-        {/* Menu */}
+       
         <nav className="flex flex-col gap-2 flex-1">
           {menuItems.map((item) => {
             const Icon = item.icon
@@ -106,7 +106,7 @@ const handleLogout = () => {
           })}
         </nav>
 
-        {/* Logout */}
+        
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
@@ -119,7 +119,7 @@ const handleLogout = () => {
         </motion.button>
       </motion.aside>
 
-      {/* Main Content */}
+  
       <main className="relative z-10 flex-1 p-6 overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, y: 15 }}

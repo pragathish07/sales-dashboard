@@ -36,10 +36,10 @@ export default function SalesLayout({
 
   return (
     <div className="min-h-screen bg-black relative flex overflow-hidden">
-      {/* Gradient BG */}
+      
       <div className="absolute inset-0 bg-gradient-to-b from-purple-600/40 via-purple-900/60 to-black" />
 
-      {/* Sidebar */}
+     
       <motion.aside
         initial={{ x: -40, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -89,7 +89,6 @@ export default function SalesLayout({
         </button>
       </motion.aside>
 
-      {/* Content */}
       <main className="relative z-10 flex-1 p-6 overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, y: 15 }}

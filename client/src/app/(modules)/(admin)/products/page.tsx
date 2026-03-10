@@ -136,7 +136,6 @@ export default function ProductsPage() {
   return (
     <div className="text-white">
 
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold bg-gradient-to-r
           from-purple-400 to-pink-500
@@ -145,7 +144,7 @@ export default function ProductsPage() {
         </h1>
       </div>
       
-      {/* Table */}
+
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -209,7 +208,7 @@ export default function ProductsPage() {
         </table>
       </motion.div>
 
-      {/* Add Product button */}
+      
       <div className="flex justify-end mt-4">
         <button
           type="button"
@@ -221,7 +220,7 @@ export default function ProductsPage() {
         </button>
       </div>
 
-      {/* Add Product modal */}
+     
       {isAdding && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-xl">

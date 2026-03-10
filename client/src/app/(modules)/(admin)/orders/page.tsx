@@ -32,10 +32,10 @@ export default function OrdersPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  // Filtering
+  
   const filteredOrders = salesFilter === 'all' ? orders : orders.filter(o => o.salesUser?.id === salesFilter)
 
-  // Sorting
+  
   const sortedOrders = [...filteredOrders].sort((a, b) => {
     if (sortField === 'date') {
       return sortOrder === 'asc'
@@ -48,7 +48,7 @@ export default function OrdersPage() {
     }
   })
 
-  // Pagination
+  
   const paginatedOrders = sortedOrders.slice((page - 1) * perPage, page * perPage)
   const nextPage = () => {
     if (page * perPage < sortedOrders.length) setPage(prev => prev + 1)
@@ -57,13 +57,13 @@ export default function OrdersPage() {
     if (page > 1) setPage(prev => prev - 1)
   }
 
-  // KPI
+  
   const totalRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0)
   const avgOrder = orders.length ? (totalRevenue / orders.length).toFixed(2) : 0
   const completedCount = orders.filter(o => o.status === 'PAID').length
   const pendingCount = orders.filter(o => o.status === 'PENDING').length
 
-  // Alerts
+
   const highValueOrders = orders.filter(o => o.totalAmount > 4000)
   const oldPendingOrders = orders.filter(o => {
     const orderDate = new Date(o.createdAt)
@@ -71,7 +71,7 @@ export default function OrdersPage() {
     return o.status === 'PENDING' && diffDays > 5
   })
 
-  // Export CSV
+  
   const exportCSV = () => {
     const csvContent =
       'data:text/csv;charset=utf-8,' +
@@ -103,7 +103,6 @@ export default function OrdersPage() {
   return (
     <div className="text-white p-4 space-y-6">
 
-      {/* Header */}
       <div className="flex justify-between mb-4 items-center">
         <h1 className="text-2xl font-semibold bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">
           Orders Dashboard
@@ -117,7 +116,6 @@ export default function OrdersPage() {
         </button>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
         <div className="bg-black/40 rounded-2xl p-4 text-center">
           <div className="text-sm text-white/60">Total Orders</div>
@@ -141,7 +139,7 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Alerts */}
+  
       <div className="space-y-2">
         {highValueOrders.length > 0 && (
           <div className="bg-purple-500/20 text-purple-400 p-3 rounded-lg">
@@ -155,7 +153,7 @@ export default function OrdersPage() {
         )}
       </div>
 
-      {/* Sorting */}
+      
       <div className="flex justify-end gap-2 mb-2">
         <select
           value={salesFilter}
@@ -186,7 +184,7 @@ export default function OrdersPage() {
         </select>
       </div>
 
-      {/* Orders Table */}
+     
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -244,7 +242,7 @@ export default function OrdersPage() {
         </table>
       </motion.div>
 
-      {/* Pagination */}
+      
       <div className="flex justify-between mt-4">
         <button
           onClick={prevPage}

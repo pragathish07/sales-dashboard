@@ -49,13 +49,12 @@ export default function SalesDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white">Sales Dashboard</h1>
         <PlaceOrderModal onOrderPlaced={loadData} />
       </div>
 
-      {/* KPI */}
+      
       <div className="grid grid-cols-4 gap-4">
         {kpis.map(k => (
           <motion.div
@@ -74,7 +73,6 @@ export default function SalesDashboard() {
         ))}
       </div>
 
-      {/* Chart */}
       <div className="bg-white/5 border border-white/10 rounded-xl p-4 h-72">
         <h2 className="text-white font-semibold mb-3">Sales Trend</h2>
 
@@ -88,7 +86,7 @@ export default function SalesDashboard() {
         </ResponsiveContainer>
       </div>
 
-      {/* Recent Orders */}
+   
       <div className="bg-white/5 border border-white/10 rounded-xl p-4">
         <h2 className="text-white font-semibold mb-3">
           Recent Orders

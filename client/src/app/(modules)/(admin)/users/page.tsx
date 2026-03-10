@@ -59,7 +59,6 @@ export default function UsersPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  /* ================= ADD USER ================= */
 
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,7 +86,7 @@ export default function UsersPage() {
     setIsAdding(false)
   }
 
-  /* ================= EDIT USER ================= */
+  
 
   const handleEditUser = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -118,7 +117,7 @@ export default function UsersPage() {
     setIsEditing(false)
   }
 
-  /* ================= DELETE USER ================= */
+  
 
   const handleDeleteUser = async (id: string) => {
     try {
@@ -133,13 +132,13 @@ export default function UsersPage() {
     setOpenMenu(null)
   }
 
-  /* ================= RESET PASSWORD ================= */
+ 
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedUser) return
 
-    // Note: In a real admin flow, you'd have a dedicated admin reset endpoint
+  
     console.log('Reset password for:', selectedUser.id, newPassword)
 
     setNewPassword('')
@@ -158,7 +157,7 @@ export default function UsersPage() {
   return (
     <div className="text-white">
 
-      {/* Header */}
+   
       <div className="flex justify-between mb-6">
         <h1 className="text-2xl font-semibold bg-gradient-to-r
           from-purple-400 to-pink-500
@@ -178,7 +177,7 @@ export default function UsersPage() {
         </button>
       </div>
 
-      {/* Table */}
+     
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -223,7 +222,7 @@ export default function UsersPage() {
                   </span>
                 </td>
 
-                {/* Actions */}
+             
                 <td className="p-4 relative">
                   <button
                     onClick={() =>
@@ -237,7 +236,7 @@ export default function UsersPage() {
                   {openMenu === user.id && (
                     <div className="absolute right-4 mt-2 w-44 bg-zinc-900 border border-white/10 rounded-xl shadow-xl z-50 text-sm">
 
-                      {/* Edit */}
+                      
                       <button
                         onClick={() => {
                           setSelectedUser(user)
@@ -254,7 +253,7 @@ export default function UsersPage() {
                         <Pencil className="w-4 h-4" /> Edit
                       </button>
 
-                      {/* Reset Password */}
+                    
                       <button
                         onClick={() => {
                           setSelectedUser(user)
@@ -266,7 +265,7 @@ export default function UsersPage() {
                         <KeyRound className="w-4 h-4" /> Reset Password
                       </button>
 
-                      {/* Delete */}
+                    
                       <button
                         onClick={() => handleDeleteUser(user.id)}
                         className="flex items-center gap-2 w-full px-4 py-2 text-red-400 hover:bg-white/5"
@@ -282,7 +281,7 @@ export default function UsersPage() {
         </table>
       </motion.div>
 
-      {/* ADD USER MODAL */}
+      
       {isAdding && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
           <div className="bg-zinc-900 p-6 rounded-2xl w-full max-w-md border border-white/10">
@@ -340,7 +339,7 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* EDIT MODAL */}
+     
       {isEditing && selectedUser && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
           <div className="bg-zinc-900 p-6 rounded-2xl w-full max-w-md border border-white/10">
@@ -382,7 +381,7 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* RESET PASSWORD MODAL */}
+      
       {isResetting && selectedUser && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
           <div className="bg-zinc-900 p-6 rounded-2xl w-full max-w-md border border-white/10">

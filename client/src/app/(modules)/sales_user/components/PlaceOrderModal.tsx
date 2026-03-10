@@ -37,7 +37,7 @@ export default function PlaceOrderModal({
     }
   }, [open])
 
-  // Auto-set price when product is selected
+
   const handleProductChange = (productId: string) => {
     const product = products.find(p => p.id === productId)
     setForm(prev => ({
@@ -52,7 +52,6 @@ export default function PlaceOrderModal({
     setSubmitting(true)
 
     try {
-      // First, find or create customer
       const custRes = await apiFetch('/api/customers', {
         method: 'POST',
         body: JSON.stringify({
@@ -68,7 +67,6 @@ export default function PlaceOrderModal({
         return
       }
 
-      // Then create the order
       await apiFetch('/api/orders', {
         method: 'POST',
         body: JSON.stringify({
@@ -105,7 +103,6 @@ export default function PlaceOrderModal({
 
   return (
     <>
-      {/* Button */}
       <button
         onClick={() => setOpen(true)}
         className="px-4 py-2 rounded-lg
@@ -115,7 +112,7 @@ export default function PlaceOrderModal({
         Place Order
       </button>
 
-      {/* Modal */}
+ 
       {open && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div
@@ -127,7 +124,7 @@ export default function PlaceOrderModal({
               Create Order
             </h2>
 
-            {/* Customer */}
+            
             <input
               placeholder="Customer Name"
               value={form.customer}
@@ -137,7 +134,7 @@ export default function PlaceOrderModal({
               }
             />
 
-            {/* Phone */}
+            
             <input
               placeholder="Phone"
               value={form.phone}
@@ -147,7 +144,7 @@ export default function PlaceOrderModal({
               }
             />
 
-            {/* Product */}
+            
             <select
               value={form.productId}
               className="w-full p-2 bg-black border border-white/10 text-white rounded-lg"
@@ -161,7 +158,7 @@ export default function PlaceOrderModal({
               ))}
             </select>
 
-            {/* Quantity */}
+            
             <input
               type="number"
               placeholder="Quantity"
@@ -173,7 +170,7 @@ export default function PlaceOrderModal({
               }
             />
 
-            {/* Price (Read-only) */}
+          
             <div>
               <label className="text-white/60 text-xs pl-1">Price per unit</label>
               <input
@@ -186,12 +183,12 @@ export default function PlaceOrderModal({
               />
             </div>
 
-            {/* Total Display */}
+            
             <div className="text-white/60 text-sm">
               Total: ₹{(form.price * form.qty).toLocaleString()}
             </div>
 
-            {/* Payment Method */}
+           
             <div>
               <label className="text-white/60 text-sm">
                 Payment Method
@@ -215,7 +212,7 @@ export default function PlaceOrderModal({
               </select>
             </div>
 
-            {/* Order Status */}
+            
             <div>
               <label className="text-white/60 text-sm">
                 Order Status
@@ -241,7 +238,7 @@ export default function PlaceOrderModal({
               </select>
             </div>
 
-            {/* Buttons */}
+            
             <div className="flex gap-2 pt-3">
               <button
                 onClick={submit}
