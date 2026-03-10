@@ -1,23 +1,34 @@
-import { prisma } from '../../config/adapter'
-import {
-  CreateProductInput,
-  UpdateProductInput,
-} from "../products/products.types";
+import { prisma } from "../../config/adapter";
 
-export const createProductService = async (data: CreateProductInput) => {
-  const { name, sku, description, price, costPrice, categoryId } = data;
-  return await prisma.product.create({
+export const getAllProducts = async () => {
+  return prisma.product.findMany({
+    include: {
+      category: true,
+      inventory: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
+export const createProduct = async (data: {
+  name: string;
+  sku: string;
+  description?: string;
+  price: number;
+  costPrice: number;
+  categoryId: string;
+  stock: number;
+  reorderLevel?: number;
+}) => {
+  const { stock, reorderLevel, ...productData } = data;
+
+  return prisma.product.create({
     data: {
-      name,
-      sku,
-      description,
-      price: Number(price),
-      costPrice: Number(costPrice),
-      categoryId,
+      ...productData,
       inventory: {
         create: {
-          quantity: 0,
-          reorderLevel: 0,
+          quantity: stock,
+          reorderLevel: reorderLevel ?? 10,
         },
       },
     },
@@ -27,6 +38,7 @@ export const createProductService = async (data: CreateProductInput) => {
     },
   });
 };
+<<<<<<< HEAD
 export const getProductsService = async () => {
   return await prisma.product.findMany({
     include: {
@@ -77,3 +89,17 @@ export const deleteProductService = async (id: string) => {
     where: { id },
   });
 };
+=======
+
+export const getAllCategories = async () => {
+  return prisma.category.findMany({
+    orderBy: { name: "asc" },
+  });
+};
+
+export const createCategory = async (name: string) => {
+  return prisma.category.create({
+    data: { name },
+  });
+};
+>>>>>>> 832d1fb72ccb2279486bdccc2883c6a2710fc4ff

@@ -1,8 +1,8 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import * as usersService from "./users.service";
 import { createUserSchema } from "./users.validation";
-import { AuthRequest } from "../../middleware/auth.middleware";
+import { AuthRequest } from "../../middleware/user.middleware";
 
 
 
@@ -15,7 +15,7 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const createUser = async (req: AuthRequest, res: Response) => {
+export const createUser = async (req: Request, res: Response) => {
   try {
     const validatedData = createUserSchema.parse(req.body);
     const user = await usersService.createUser(validatedData);

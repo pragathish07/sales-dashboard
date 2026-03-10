@@ -1,27 +1,18 @@
 import { Router } from "express";
 import {
-  createProduct,
   getProducts,
-  getProductById,
-  updateProduct,
-  deleteProduct,
+  createProduct,
+  getCategories,
+  createCategory,
 } from "./products.controller";
-import { authenticate } from "../../middleware/auth.middleware";
-import { authorize } from '../../middleware/role.middleware';
+import { verifyToken } from "../../middleware/auth.middleware";
+import { requireRole } from "../../middleware/role.middleware";
 
-
- 
 const router = Router();
- 
-// router.post("/", createProduct);
-// router.get("/",getProducts);
-// router.get("/:id", getProductById);
-// router.put("/:id",  updateProduct);
-// router.delete("/:id", deleteProduct);
-router.get("/", authenticate, getProducts as any);
-router.get("/:id", authenticate, getProductById);
-router.post("/", authenticate, authorize(["ADMIN"]), createProduct);
-router.put("/:id", authenticate, authorize(["ADMIN"]), updateProduct);
-router.delete("/:id", authenticate, authorize(["ADMIN"]), deleteProduct);
- 
+
+router.get("/", verifyToken, getProducts);
+router.post("/", verifyToken, requireRole(["ADMIN"]), createProduct);
+router.get("/categories", verifyToken, getCategories);
+router.post("/categories", verifyToken, requireRole(["ADMIN"]), createCategory);
+
 export default router;

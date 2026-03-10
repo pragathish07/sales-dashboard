@@ -1,14 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import userRoutes  from './modules/users/users.route';
-import ordersRouter from './modules/orders/orders.route';
-import customersRouter from './modules/customers/customers.route';
-
-import productRoutes from './modules/products/products.route';
-import categoryRoutes from './modules/category/category.route';
+import userRoutes from './modules/users/users.route';
 import authRoutes from './modules/auth/auth.route';
-import inventoryRoutes from './modules/inventory/inventory.route';
+import orderRoutes from './modules/orders/orders.route';
+import productRoutes from './modules/products/products.route';
+import customerRoutes from './modules/customers/customers.route';
+import reportRoutes from './modules/reports/reports.route';
 
 dotenv.config();
 
@@ -26,17 +24,13 @@ app.get('/ping', (req, res) => {
   res.send("pong");
 });
 
-// Orders Routes
-app.use('/api/orders', ordersRouter);
 app.use('/api/users', userRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/category', categoryRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/inventory', inventoryRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/reports', reportRoutes);
 
-
-// Customers Routes
-app.use('/api/customers', customersRouter);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

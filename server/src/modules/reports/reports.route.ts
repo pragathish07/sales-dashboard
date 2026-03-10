@@ -1,14 +1,11 @@
-import { Router } from 'express'
-import {
-  getSalesReport,
-  getInventoryReport
-} from './reports.controller'
-import { authenticate } from '../../middleware/auth.middleware'
-import { requireRole } from '../../middleware/role.middleware'
+import { Router } from "express";
+import { adminStats, salesStats } from "./reports.controller";
+import { verifyToken } from "../../middleware/auth.middleware";
+import { requireRole } from "../../middleware/role.middleware";
 
-const router = Router()
+const router = Router();
 
-router.get('/sales', authenticate, requireRole(['ADMIN']), getSalesReport)
-router.get('/inventory', authenticate, requireRole(['ADMIN']), getInventoryReport)
+router.get("/admin-stats", verifyToken, requireRole(["ADMIN"]), adminStats);
+router.get("/sales-stats", verifyToken, salesStats);
 
-export default router
+export default router;

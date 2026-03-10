@@ -1,5 +1,9 @@
 import { Router } from "express";
 import {
+<<<<<<< HEAD
+=======
+  register,
+>>>>>>> 832d1fb72ccb2279486bdccc2883c6a2710fc4ff
   login,
   me,
   logout,
@@ -12,6 +16,7 @@ import {
 
 import { validate } from "../../middleware/validate";
 import {
+  registerSchema,
   loginSchema,
   changePasswordSchema,
   forgotPasswordSchema,
@@ -20,28 +25,29 @@ import {
   userIdParamSchema,
 } from "./auth.validate";
 
-import { authenticate } from "../../middleware/auth.middleware";
+import { verifyToken } from "../../middleware/auth.middleware";
 import { requireRole } from "../../middleware/role.middleware";
 
 const router = Router();
 
+router.post("/register", validate(registerSchema), register);
 router.post("/login", validate(loginSchema), login);
 router.post("/logout", logout);
 
 router.post("/forgot-password", validate(forgotPasswordSchema), forgotPassword);
 router.post("/reset-password", validate(resetPasswordSchema), resetPassword);
 
-router.patch("/profile", authenticate, validate(updateProfileSchema), updateProfile);
-router.post("/change-password", authenticate, validate(changePasswordSchema), changePassword);
+router.patch("/profile", verifyToken, validate(updateProfileSchema), updateProfile);
+router.post("/change-password", verifyToken, validate(changePasswordSchema), changePassword);
 
 router.delete(
   "/users/:userId",
-  authenticate,
+  verifyToken,
   requireRole(["ADMIN"]),
   validate(userIdParamSchema),
   deleteUser
 );
 
-router.get("/me", authenticate, me);
+router.get("/me", verifyToken, me);
 
 export default router;

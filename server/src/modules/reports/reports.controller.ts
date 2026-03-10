@@ -1,20 +1,20 @@
-import { Request, Response } from 'express'
-import * as reportService from './reports.service'
+import { Response } from "express";
+import * as reportsService from "./reports.service";
 
-export const getSalesReport = async (req: Request, res: Response) => {
+export const adminStats = async (_req: any, res: Response) => {
   try {
-    const report = await reportService.getSalesReportService()
-    res.json(report)
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch sales report' })
+    const stats = await reportsService.getAdminStats();
+    res.json(stats);
+  } catch (error: any) {
+    res.status(500).json({ message: "Error fetching admin stats", error: error.message });
   }
-}
+};
 
-export const getInventoryReport = async (req: Request, res: Response) => {
+export const salesStats = async (req: any, res: Response) => {
   try {
-    const report = await reportService.getInventoryReportService()
-    res.json(report)
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch inventory report' })
+    const stats = await reportsService.getSalesStats(req.user.id);
+    res.json(stats);
+  } catch (error: any) {
+    res.status(500).json({ message: "Error fetching sales stats", error: error.message });
   }
-}
+};

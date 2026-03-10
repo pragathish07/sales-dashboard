@@ -1,7 +1,12 @@
 import { prisma } from "../../config/adapter";
 import bcrypt from "bcrypt";
 
-import { CreateUserInput } from "../users/users.types"
+interface CreateUserInput {
+  name: string;
+  email: string;
+  password: string;
+  role: "ADMIN" | "SALES";
+}
 
 export const createUser = async (data: CreateUserInput) => {
   const existingUser = await prisma.user.findUnique({

@@ -1,7 +1,21 @@
 import { Request, Response } from "express";
+<<<<<<< HEAD
 import { AuthRequest } from "../../middleware/auth.middleware";
 import * as authService from "./auth.service";
 
+=======
+import * as authService from "./auth.service";
+
+export const register = async (req: Request, res: Response) => {
+  try {
+    const data = await authService.registerUser(req.body);
+    res.status(201).json(data);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+>>>>>>> 832d1fb72ccb2279486bdccc2883c6a2710fc4ff
 export const login = async (req: Request, res: Response) => {
   try {
     const data = await authService.loginUser(req.body);
@@ -25,8 +39,13 @@ export const logout = async (_req: Request, res: Response) => {
   res.json(data);
 };
 
+<<<<<<< HEAD
 export const me = async (req: AuthRequest, res: Response) => {
   const user = await authService.getCurrentUser(req.user!.id);
+=======
+export const me = async (req: any, res: Response) => {
+  const user = await authService.getCurrentUser(req.user.id);
+>>>>>>> 832d1fb72ccb2279486bdccc2883c6a2710fc4ff
   res.json(user);
 };
 
@@ -48,18 +67,18 @@ export const resetPassword = async (req: Request, res: Response) => {
   }
 };
 
-export const changePassword = async (req: AuthRequest, res: Response) => {
+export const changePassword = async (req: any, res: Response) => {
   try {
-    const data = await authService.changePassword(req.user!.id, req.body);
+    const data = await authService.changePassword(req.user.id, req.body);
     res.json(data);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
 };
 
-export const updateProfile = async (req: AuthRequest, res: Response) => {
+export const updateProfile = async (req: any, res: Response) => {
   try {
-    const data = await authService.updateProfile(req.user!.id, req.body);
+    const data = await authService.updateProfile(req.user.id, req.body);
     res.json(data);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
