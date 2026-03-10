@@ -38,6 +38,58 @@ export const createProduct = async (data: {
     },
   });
 };
+<<<<<<< HEAD
+export const getProductsService = async () => {
+  return await prisma.product.findMany({
+    include: {
+      category: true,
+      inventory: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+export const getProductByIdService = async (id: string) => {
+  return await prisma.product.findUnique({
+    where: { id },
+    include: {
+      category: true,
+      inventory: true,
+    },
+  });
+};
+export const updateProductService = async (
+  id: string,
+  data: UpdateProductInput
+) => {
+  const { name, sku, description, price, costPrice, categoryId } = data;
+  return await prisma.product.update({
+    where: { id },
+    data: {
+      name,
+      sku,
+      description,
+      price: price ? Number(price) : undefined,
+      costPrice: costPrice ? Number(costPrice) : undefined,
+      categoryId,
+    },
+    include: {
+      category: true,
+      inventory: true,
+    },
+  });
+};
+export const deleteProductService = async (id: string) => {
+  await prisma.inventory.deleteMany({
+    where: { productId: id },
+  });
+ 
+  return await prisma.product.delete({
+    where: { id },
+  });
+};
+=======
 
 export const getAllCategories = async () => {
   return prisma.category.findMany({
@@ -50,3 +102,4 @@ export const createCategory = async (name: string) => {
     data: { name },
   });
 };
+>>>>>>> 832d1fb72ccb2279486bdccc2883c6a2710fc4ff

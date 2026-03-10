@@ -1,4 +1,9 @@
 import { Request, Response } from "express";
+<<<<<<< HEAD
+import { AuthRequest } from "../../middleware/auth.middleware";
+import * as authService from "./auth.service";
+
+=======
 import * as authService from "./auth.service";
 
 export const register = async (req: Request, res: Response) => {
@@ -10,6 +15,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+>>>>>>> 832d1fb72ccb2279486bdccc2883c6a2710fc4ff
 export const login = async (req: Request, res: Response) => {
   try {
     const data = await authService.loginUser(req.body);
@@ -33,8 +39,13 @@ export const logout = async (_req: Request, res: Response) => {
   res.json(data);
 };
 
+<<<<<<< HEAD
+export const me = async (req: AuthRequest, res: Response) => {
+  const user = await authService.getCurrentUser(req.user!.id);
+=======
 export const me = async (req: any, res: Response) => {
   const user = await authService.getCurrentUser(req.user.id);
+>>>>>>> 832d1fb72ccb2279486bdccc2883c6a2710fc4ff
   res.json(user);
 };
 
