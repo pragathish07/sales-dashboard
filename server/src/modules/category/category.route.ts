@@ -6,8 +6,8 @@ import {
   updateCategory,
   deleteCategory,
 } from "./category.controller";
-import { authenticate } from "../../middleware/auth.middleware";
-import { authorize } from "../../middleware/role.middleware";
+import { verifyToken } from "../../middleware/auth.middleware";
+import { requireRole } from "../../middleware/role.middleware";
 
 const router = Router();
 
@@ -16,10 +16,10 @@ const router = Router();
 // router.get("/:id", getCategoryById);
 // router.put("/:id", updateCategory);
 // router.delete("/:id", deleteCategory);
-router.get("/", authenticate, getCategories as any);
-router.get("/:id", authenticate, getCategoryById);
-router.post("/", authenticate, authorize(["ADMIN"]), createCategory);
-router.put("/:id", authenticate, authorize(["ADMIN"]), updateCategory);
-router.delete("/:id", authenticate, authorize(["ADMIN"]), deleteCategory);
+router.get("/", verifyToken, getCategories as any);
+router.get("/:id", verifyToken, getCategoryById);
+router.post("/", verifyToken, requireRole(["ADMIN"]), createCategory);
+router.put("/:id", verifyToken, requireRole(["ADMIN"]), updateCategory);
+router.delete("/:id", verifyToken, requireRole(["ADMIN"]), deleteCategory);
 
 export default router;

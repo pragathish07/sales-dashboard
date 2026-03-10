@@ -1,7 +1,7 @@
 // src/modules/inventory/inventory.controller.ts
 
 import { Response } from 'express';
-import { AuthRequest } from '../../middleware/auth.middleware';
+import { AuthRequest } from '../../middleware/user.middleware';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryRequest, UpdateInventoryRequest, InventoryResponse, GetInventoryFilter } from './inventory.types';
 

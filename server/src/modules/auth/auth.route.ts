@@ -1,9 +1,6 @@
 import { Router } from "express";
 import {
-<<<<<<< HEAD
-=======
   register,
->>>>>>> 832d1fb72ccb2279486bdccc2883c6a2710fc4ff
   login,
   me,
   logout,

@@ -1,8 +1,7 @@
-import { Response } from "express";
-import { AuthRequest } from "../../middleware/auth.middleware";
+import { Response, Request } from "express";
 import * as categoryService from "./category.service";
 
-export const createCategory = async (req: AuthRequest, res: Response) => {
+export const createCategory = async (req: any, res: Response) => {
   try {
     const category = await categoryService.createCategoryService(req.body);
     res.status(201).json(category);
@@ -20,7 +19,7 @@ export const getCategories = async (_req: Request, res: Response) => {
   }
 };
 
-export const getCategoryById = async (req: AuthRequest, res: Response) => {
+export const getCategoryById = async (req: any, res: Response) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const category = await categoryService.getCategoryByIdService(id);
@@ -31,7 +30,7 @@ export const getCategoryById = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const updateCategory = async (req: AuthRequest, res: Response) => {
+export const updateCategory = async (req: any, res: Response) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const category = await categoryService.updateCategoryService(id, req.body);
@@ -41,7 +40,7 @@ export const updateCategory = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const deleteCategory = async (req: AuthRequest, res: Response) => {
+export const deleteCategory = async (req: any, res: Response) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     await categoryService.deleteCategoryService(id);
