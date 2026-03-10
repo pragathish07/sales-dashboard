@@ -122,7 +122,7 @@ export default function SalesOrdersPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-white mb-4">
-        My Orders
+        Orders
       </h1>
 
       <div className="bg-black/40 backdrop-blur-xl
