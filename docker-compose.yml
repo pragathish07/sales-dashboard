@@ -7,23 +7,23 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  client:
+    build: ./client
+    restart: always
+    expose:
+      - "3000"
+    depends_on:
+      - server
+
   server:
     build: ./server
     restart: always
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/sales_dashboard
     depends_on:
       - db
-
-  client:
-    build: ./client
-    restart: always
-    ports:
-      - "3000:3000"
-    depends_on:
-      - server
 
   nginx:
     build: ./nginx
