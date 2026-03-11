@@ -10,7 +10,8 @@ import {
   Package,
   ShoppingCart,
   Users,
-  LogOut
+  LogOut,
+  Tags
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -33,14 +34,19 @@ const menuItems = [
     icon: ShoppingCart
   },
   {
-    name: 'Users',
+    name: 'Sales Users',
     href: '/users',
+    icon: Users
+  },
+  {
+    name: 'Customers',
+    href: '/customers',
     icon: Users
   },
   {
     name: 'Categories',
     href: '/categories',
-    icon: Users
+    icon: Tags
   }
 ]
 

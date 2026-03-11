@@ -63,7 +63,7 @@ resource "aws_route_table_association" "public_rt_assoc_2" {
 
 resource "aws_security_group" "sales_sg" {
   name        = "sales-dashboard-sg"
-  description = "Allow SSH and HTTP/HTTPS traffic"
+  description = "Allow SSH and HTTP only from ALB"
   vpc_id      = aws_vpc.sales_vpc.id
 
   ingress {
@@ -75,19 +75,11 @@ resource "aws_security_group" "sales_sg" {
   }
 
   ingress {
-    description = "HTTP"
+    description = "HTTP from ALB only"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "HTTPS"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.alb_sg.id]
   }
 
   egress {
