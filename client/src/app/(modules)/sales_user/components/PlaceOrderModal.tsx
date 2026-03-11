@@ -7,6 +7,7 @@ type Product = {
   id: string
   name: string
   price: number
+  inventory?: { quantity: number }
 }
 
 export default function PlaceOrderModal({
@@ -43,7 +44,8 @@ export default function PlaceOrderModal({
     setForm(prev => ({
       ...prev,
       productId,
-      price: product?.price || 0
+      price: product?.price || 0,
+      qty: 1
     }))
   }
 
@@ -67,7 +69,16 @@ export default function PlaceOrderModal({
         return
       }
 
-      await apiFetch('/api/orders', {
+      // client-side stock check
+      const selected = products.find(p => p.id === form.productId)
+      const avail = selected?.inventory?.quantity ?? Infinity
+      if (form.qty > avail) {
+        alert(`Not enough stock, only ${avail} available`)
+        setSubmitting(false)
+        return
+      }
+
+      const orderRes = await apiFetch('/api/orders', {
         method: 'POST',
         body: JSON.stringify({
           customerId,
@@ -82,6 +93,13 @@ export default function PlaceOrderModal({
           ],
         }),
       })
+
+      if (!orderRes.ok) {
+        const errData = await orderRes.json().catch(() => null)
+        alert(`Order failed: ${errData?.message || orderRes.statusText}`)
+        setSubmitting(false)
+        return
+      }
 
       setOpen(false)
       setForm({
@@ -153,10 +171,15 @@ export default function PlaceOrderModal({
               <option value="">Select Product</option>
               {products.map(p => (
                 <option key={p.id} value={p.id}>
-                  {p.name} — ₹{p.price}
+                  {p.name} — ₹{p.price} {p.inventory ? `(stock: ${p.inventory.quantity})` : ''}
                 </option>
               ))}
             </select>
+            {form.productId && (
+              <p className="text-white/60 text-xs">
+                Available: {products.find(p => p.id === form.productId)?.inventory?.quantity ?? '—'}
+              </p>
+            )}
 
             
             <input
@@ -165,9 +188,16 @@ export default function PlaceOrderModal({
               value={form.qty}
               min={1}
               className="w-full p-2 bg-black border border-white/10 text-white rounded-lg"
-              onChange={e =>
-                setForm({ ...form, qty: +e.target.value })
-              }
+              onChange={e => {
+                const val = +e.target.value
+                const prod = products.find(p => p.id === form.productId)
+                const avail = prod?.inventory?.quantity ?? Infinity
+                setForm({ ...form, qty: val })
+                if (val > avail) {
+                  alert(`Only ${avail} units available`)
+                  setForm(prev => ({ ...prev, qty: avail }))
+                }
+              }}
             />
 
           

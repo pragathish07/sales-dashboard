@@ -4,12 +4,13 @@ import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, ShoppingCart, LogOut } from 'lucide-react'
+import { LayoutDashboard, ShoppingCart, LogOut, Package } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const menuItems = [
   { name: 'Dashboard', href: '/sales_user', icon: LayoutDashboard },
-  { name: 'Orders', href: '/sales_user/orders', icon: ShoppingCart }
+  { name: 'Orders', href: '/sales_user/orders', icon: ShoppingCart },
+  { name: 'Products', href: '/sales_user/products', icon: Package }
 ]
 
 export default function SalesLayout({
