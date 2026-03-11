@@ -22,5 +22,5 @@ jobs:
           script: |
             cd ~/sales-dashboard
             git pull origin main
-            docker system prune -af
+            docker image prune -af
             docker compose up --build -d
