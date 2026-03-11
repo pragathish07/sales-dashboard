@@ -63,7 +63,7 @@ resource "aws_route_table_association" "public_rt_assoc_2" {
 
 resource "aws_security_group" "sales_sg" {
   name        = "sales-dashboard-sg"
-  description = "Allow SSH and HTTP only from ALB"
+  description = "Allow SSH and HTTP/HTTPS traffic"
   vpc_id      = aws_vpc.sales_vpc.id
 
   ingress {
