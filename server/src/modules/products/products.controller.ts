@@ -36,3 +36,15 @@ export const createCategory = async (req: Request, res: Response) => {
     res.status(400).json({ message: "Error creating category", error: error.message });
   }
 };
+
+export const updateProductStock = async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const { stock } = req.body;
+    if (typeof stock !== 'number') return res.status(400).json({ message: 'Stock must be a number' });
+    const product = await productsService.updateProductStock(id, stock);
+    res.json({ product });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error updating stock', error: error.message });
+  }
+};
