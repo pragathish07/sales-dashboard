@@ -21,7 +21,7 @@ services:
     expose:
       - "8080"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/sales_dashboard
+      DATABASE_URL: ${DATABASE_URL}
     depends_on:
       - db
 
