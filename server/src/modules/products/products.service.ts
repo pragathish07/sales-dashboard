@@ -39,6 +39,21 @@ export const createProduct = async (data: {
   });
 };
 
+export const updateProductStock = async (id: string, stock: number) => {
+  return prisma.product.update({
+    where: { id },
+    data: {
+      inventory: {
+        update: { quantity: stock },
+      },
+    },
+    include: {
+      category: true,
+      inventory: true,
+    },
+  });
+};
+
 export const getAllCategories = async () => {
   return prisma.category.findMany({
     orderBy: { name: "asc" },

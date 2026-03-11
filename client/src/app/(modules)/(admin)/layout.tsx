@@ -36,6 +36,11 @@ const menuItems = [
     name: 'Users',
     href: '/users',
     icon: Users
+  },
+  {
+    name: 'Categories',
+    href: '/categories',
+    icon: Users
   }
 ]
 

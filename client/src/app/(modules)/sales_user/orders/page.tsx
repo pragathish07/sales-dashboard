@@ -123,6 +123,14 @@ export default function SalesOrdersPage() {
       <div className="bg-black/40 backdrop-blur-xl
                       border border-white/10
                       rounded-2xl">
+        {/* header row */}
+        <div className="grid grid-cols-5 p-4 text-white font-semibold border-b border-white/10">
+          <span>Customer</span>
+          <span>Amount</span>
+          <span>Status</span>
+          <span>Date</span>
+          <span className="text-right">Actions</span>
+        </div>
         {orders.length === 0 && (
           <p className="text-white/40 text-sm p-4">No orders found</p>
         )}

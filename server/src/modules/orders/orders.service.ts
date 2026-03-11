@@ -49,30 +49,65 @@ export const createOrder = async (data: {
   status: "PENDING" | "PAID" | "CANCELLED" | "REFUNDED";
   items: { productId: string; quantity: number; price: number }[];
 }) => {
-  const totalAmount = data.items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  // ensure sufficient inventory and decrement in transaction
+  return await prisma.$transaction(async (tx) => {
+    // load inventories for all products in order
+    const inventories = await Promise.all(
+      data.items.map((item) =>
+        tx.inventory.findUnique({
+          where: { productId: item.productId },
+        })
+      )
+    );
 
-  return prisma.order.create({
-    data: {
-      customerId: data.customerId,
-      userId: data.userId,
-      paymentMethod: data.paymentMethod,
-      status: data.status,
-      totalAmount,
-      items: {
-        create: data.items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-        })),
+    for (let i = 0; i < data.items.length; i++) {
+      const item = data.items[i];
+      const inv = inventories[i];
+      if (!inv) {
+        throw new Error(`No inventory record for product ${item.productId}`);
+      }
+      if (inv.quantity < item.quantity) {
+        throw new Error(`Insufficient stock for product ${item.productId}`);
+      }
+    }
+
+    // decrement inventory
+    await Promise.all(
+      data.items.map((item) =>
+        tx.inventory.update({
+          where: { productId: item.productId },
+          data: { quantity: { decrement: item.quantity } },
+        })
+      )
+    );
+
+    const totalAmount = data.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    const order = await tx.order.create({
+      data: {
+        customerId: data.customerId,
+        userId: data.userId,
+        paymentMethod: data.paymentMethod,
+        status: data.status,
+        totalAmount,
+        items: {
+          create: data.items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        },
       },
-    },
-    include: {
-      customer: true,
-      items: { include: { product: true } },
-    },
+      include: {
+        customer: true,
+        items: { include: { product: true } },
+      },
+    });
+
+    return order;
   });
 };
 

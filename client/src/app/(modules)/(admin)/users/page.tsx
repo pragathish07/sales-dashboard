@@ -25,6 +25,8 @@ type SalesUser = {
 
 export default function UsersPage() {
   const [users, setUsers] = useState<SalesUser[]>([])
+  const [filteredUsers, setFilteredUsers] = useState<SalesUser[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
 
@@ -37,7 +39,8 @@ export default function UsersPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    role: 'SALES'
   })
 
   const [newPassword, setNewPassword] = useState('')
@@ -45,16 +48,20 @@ export default function UsersPage() {
   useEffect(() => {
     apiFetch('/api/users')
       .then(r => r.json())
-      .then(data => setUsers(data.users || []))
+      .then(data => {
+        const list = data.users || []
+        setUsers(list)
+        setFilteredUsers(list)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
   const resetForm = () => {
-    setFormData({ name: '', email: '', password: '' })
+    setFormData({ name: '', email: '', password: '', role: 'SALES' })
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
@@ -72,7 +79,7 @@ export default function UsersPage() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          role: 'SALES',
+          role: formData.role,
         }),
       })
 
@@ -158,23 +165,41 @@ export default function UsersPage() {
     <div className="text-white">
 
    
-      <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-semibold bg-gradient-to-r
-          from-purple-400 to-pink-500
-          text-transparent bg-clip-text">
-          Manage Sales Users
-        </h1>
-
-        <button
-          onClick={() => {
-            resetForm()
-            setIsAdding(true)
-          }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500 hover:bg-purple-600 text-sm font-medium text-white shadow-lg shadow-purple-500/30 transition"
-        >
-          <Plus className="w-4 h-4" />
-          Add Sales User
-        </button>
+      <div className="flex flex-col sm:flex-row justify-between mb-6 gap-4">
+        <div className="flex items-center gap-3 flex-1">
+          <h1 className="text-2xl font-semibold bg-gradient-to-r
+            from-purple-400 to-pink-500
+            text-transparent bg-clip-text">
+            Manage Sales Users
+          </h1>
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => {
+              const term = e.target.value
+              setSearchTerm(term)
+              const filtered = users.filter(u =>
+                u.name.toLowerCase().includes(term.toLowerCase()) ||
+                u.email.toLowerCase().includes(term.toLowerCase())
+              )
+              setFilteredUsers(filtered)
+            }}
+            className="bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-white outline-none focus:border-purple-500"
+          />
+          <button
+            onClick={() => {
+              resetForm()
+              setIsAdding(true)
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500 hover:bg-purple-600 text-sm font-medium text-white shadow-lg shadow-purple-500/30 transition"
+          >
+            <Plus className="w-4 h-4" />
+            Add Sales User
+          </button>
+        </div>
       </div>
 
      
@@ -186,15 +211,15 @@ export default function UsersPage() {
         <table className="w-full text-sm">
           <thead className="bg-white/5 text-white/60">
             <tr>
-              <th className="text-left p-4">Name</th>
-              <th className="text-left p-4">Email</th>
-              <th className="text-left p-4">Role</th>
-              <th className="text-left p-4">Actions</th>
+              <th className="text-left p-4 font-semibold">Name</th>
+              <th className="text-left p-4 font-semibold">Email</th>
+              <th className="text-left p-4 font-semibold">Role</th>
+              <th className="text-left p-4 font-semibold">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {users.map((user, i) => (
+            {filteredUsers.map((user, i) => (
               <motion.tr
                 key={user.id}
                 initial={{ opacity: 0 }}
@@ -202,18 +227,22 @@ export default function UsersPage() {
                 transition={{ delay: i * 0.05 }}
                 className="border-t border-white/10 hover:bg-white/5 transition relative"
               >
-                <td className="p-4 flex items-center gap-3">
-                  <User className="w-4 h-4 text-purple-400" />
-                  {user.name}
+                <td className="p-4 text-left">
+                  <div className="flex items-center gap-3">
+                    <User className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                    <span>{user.name}</span>
+                  </div>
                 </td>
 
-                <td className="p-4 flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-blue-400" />
-                  {user.email}
+                <td className="p-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                    <span>{user.email}</span>
+                  </div>
                 </td>
 
-                <td className="p-4">
-                  <span className={`px-3 py-1 rounded-full text-xs ${
+                <td className="p-4 text-left">
+                  <span className={`px-3 py-1 rounded-full text-xs inline-block ${
                     user.role === 'ADMIN'
                       ? 'bg-purple-500/20 text-purple-400'
                       : 'bg-blue-500/20 text-blue-400'
@@ -223,7 +252,7 @@ export default function UsersPage() {
                 </td>
 
              
-                <td className="p-4 relative">
+                <td className="p-4 text-left relative">
                   <button
                     onClick={() =>
                       setOpenMenu(openMenu === user.id ? null : user.id)
@@ -243,7 +272,8 @@ export default function UsersPage() {
                           setFormData({
                             name: user.name,
                             email: user.email,
-                            password: ''
+                            password: '',
+                            role: user.role || 'SALES'
                           })
                           setIsEditing(true)
                           setOpenMenu(null)
@@ -293,7 +323,7 @@ export default function UsersPage() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Full Name"
-                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg"
+                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-white outline-none focus:border-purple-500"
                 required
               />
 
@@ -303,9 +333,20 @@ export default function UsersPage() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Email"
-                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg"
+                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-white outline-none focus:border-purple-500"
                 required
               />
+
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-white outline-none focus:border-purple-500"
+                required
+              >
+                <option value="SALES">Sales User</option>
+                <option value="ADMIN">Admin</option>
+              </select>
 
               <input
                 name="password"
@@ -313,7 +354,7 @@ export default function UsersPage() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Password (min 6 chars)"
-                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg"
+                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-white outline-none focus:border-purple-500"
                 required
                 minLength={6}
               />
@@ -322,14 +363,14 @@ export default function UsersPage() {
                 <button
                   type="button"
                   onClick={() => setIsAdding(false)}
-                  className="px-3 py-2 border border-white/10 rounded-full"
+                  className="px-3 py-2 border border-white/10 rounded-full text-white/70 hover:bg-white/5 transition"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-full bg-purple-500 hover:bg-purple-600"
+                  className="px-4 py-2 rounded-full bg-purple-500 hover:bg-purple-600 text-white font-medium transition"
                 >
                   Create User
                 </button>
@@ -350,28 +391,30 @@ export default function UsersPage() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg"
+                placeholder="Full Name"
+                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-white outline-none focus:border-purple-500"
               />
 
               <input
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg"
+                placeholder="Email"
+                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-white outline-none focus:border-purple-500"
               />
 
               <div className="flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-3 py-2 border border-white/10 rounded-full"
+                  className="px-3 py-2 border border-white/10 rounded-full text-white/70 hover:bg-white/5 transition"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-full bg-purple-500 hover:bg-purple-600"
+                  className="px-4 py-2 rounded-full bg-purple-500 hover:bg-purple-600 text-white font-medium transition"
                 >
                   Save Changes
                 </button>
@@ -393,7 +436,7 @@ export default function UsersPage() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="New password"
-                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg"
+                className="w-full bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-white outline-none focus:border-purple-500"
                 required
               />
 
@@ -401,14 +444,14 @@ export default function UsersPage() {
                 <button
                   type="button"
                   onClick={() => setIsResetting(false)}
-                  className="px-3 py-2 border border-white/10 rounded-full"
+                  className="px-3 py-2 border border-white/10 rounded-full text-white/70 hover:bg-white/5 transition"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-full bg-yellow-500 hover:bg-yellow-600"
+                  className="px-4 py-2 rounded-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium transition"
                 >
                   Reset Password
                 </button>
